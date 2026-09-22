@@ -129,6 +129,108 @@
 
   let guardandoInforme = false;
 
+  // =========================================================
+  // INFORME EN CURSO - PRIMER PASO
+  // Crea UN informe en Supabase cuando aparece el primer
+  // producto en la tabla. Todavía no sincroniza productos.
+  // =========================================================
+
+  let informeEnCursoId = null;
+  let creandoInformeEnCurso = false;
+
+  const tipoMapInforme = {
+    "1": "inventario",
+    "2": "devolucion",
+    "3": "recepcion"
+  };
+
+  async function crearInformeEnCursoSiCorresponde() {
+    if (informeEnCursoId || creandoInformeEnCurso) return;
+
+    const session = window.zeroStockSession;
+    const tipoEl = document.getElementById("tipo-informe");
+    const distribuidorEl = document.getElementById("distribuidor");
+    const tbody = document.getElementById("tbody");
+
+    if (
+      !session?.user?.id ||
+      !tipoEl ||
+      !distribuidorEl ||
+      !tbody ||
+      tbody.rows.length === 0 ||
+      distribuidorEl.selectedIndex <= 0
+    ) {
+      return;
+    }
+
+    const tipo = tipoMapInforme[String(tipoEl.value)];
+    if (!tipo) return;
+
+    const nombreDistribuidor = (
+      distribuidorEl.selectedOptions?.[0]?.text ||
+      distribuidorEl.value ||
+      ""
+    ).trim();
+
+    creandoInformeEnCurso = true;
+
+    try {
+      const { data: informe, error } = await client
+        .from("informes")
+        .insert({
+          usuario_id: session.user.id,
+          tipo: tipo,
+          estado: "en curso",
+          distribuidor: nombreDistribuidor
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      informeEnCursoId = informe.id;
+      window.zeroStockInformeEnCursoId = informe.id;
+
+      console.log(
+        "Informe en curso creado correctamente en Supabase:",
+        informe.id
+      );
+    } catch (err) {
+      console.error(
+        "No se pudo crear el informe en curso en Supabase:",
+        err
+      );
+    } finally {
+      creandoInformeEnCurso = false;
+    }
+  }
+
+  function activarObservadorInformeEnCurso() {
+    const tbody = document.getElementById("tbody");
+    if (!tbody) return;
+
+    const observer = new MutationObserver(() => {
+      if (tbody.rows.length > 0) {
+        crearInformeEnCursoSiCorresponde();
+      }
+    });
+
+    observer.observe(tbody, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      activarObservadorInformeEnCurso
+    );
+  } else {
+    activarObservadorInformeEnCurso();
+  }
+
+
   function convertirTallas(texto) {
     if (!texto) return null;
 
