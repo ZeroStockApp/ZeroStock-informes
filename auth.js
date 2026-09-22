@@ -177,6 +177,35 @@
     creandoInformeEnCurso = true;
 
     try {
+      // Antes de crear un borrador nuevo, comprobar si este usuario
+      // ya tiene uno. Supabase permite un solo borrador por usuario.
+      const {
+        data: borradorExistente,
+        error: errorBuscarBorrador
+      } = await client
+        .from("informes")
+        .select("id")
+        .eq("usuario_id", session.user.id)
+        .eq("estado", "borrador")
+        .maybeSingle();
+
+      if (errorBuscarBorrador) {
+        throw errorBuscarBorrador;
+      }
+
+      if (borradorExistente?.id) {
+        informeEnCursoId = borradorExistente.id;
+        window.zeroStockInformeEnCursoId = borradorExistente.id;
+
+        console.log(
+          "Borrador existente encontrado en Supabase:",
+          borradorExistente.id
+        );
+
+        await sincronizarProductosBorrador();
+        return;
+      }
+
       const { data: informe, error } = await client
         .from("informes")
         .insert({
