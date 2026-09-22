@@ -26,11 +26,18 @@
     SUPABASE_KEY
   );
 
+  // Compartimos el mismo cliente autenticado con rmc.js.
+  window.zeroStockSupabase = client;
+  window.zeroStockSession = null;
+  window.zeroStockPerfil = null;
+
   function showLogin() {
     login.style.display = "flex";
     app.style.display = "none";
     sessionBar.style.display = "none";
     userLabel.textContent = "";
+    window.zeroStockSession = null;
+    window.zeroStockPerfil = null;
   }
 
   async function showApp(session) {
@@ -38,6 +45,7 @@
     app.style.display = "block";
     sessionBar.style.display = "flex";
     errorBox.textContent = "";
+    window.zeroStockSession = session;
 
     const { data: perfil, error } = await client
       .from("perfiles")
@@ -48,11 +56,13 @@
     if (error || !perfil) {
       console.error("No se pudo cargar el perfil:", error);
       userLabel.textContent = session?.user?.email || "";
+      window.zeroStockPerfil = null;
       return;
     }
 
+    window.zeroStockPerfil = perfil;
     userLabel.textContent = perfil.nombre;
-}
+  }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -70,7 +80,7 @@
       if (error) throw error;
       if (!data.session) throw new Error("No session");
 
-      showApp(data.session);
+      await showApp(data.session);
       password.value = "";
 
     } catch (err) {
@@ -106,7 +116,7 @@
     const { data, error } = await client.auth.getSession();
 
     if (!error && data.session) {
-      showApp(data.session);
+      await showApp(data.session);
     } else {
       showLogin();
     }
