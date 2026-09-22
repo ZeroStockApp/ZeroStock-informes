@@ -62,6 +62,12 @@
 
     window.zeroStockPerfil = perfil;
     userLabel.textContent = perfil.nombre;
+
+    // Dar un instante al formulario para terminar de cargar sus opciones
+    // antes de reconstruir un borrador existente.
+    setTimeout(() => {
+      recuperarBorradorExistente();
+    }, 0);
   }
 
   form.addEventListener("submit", async (event) => {
@@ -139,12 +145,164 @@
   let creandoInformeEnCurso = false;
   let sincronizandoProductos = false;
   let sincronizacionPendiente = false;
+  let recuperandoBorrador = false;
 
   const tipoMapInforme = {
     "1": "inventario",
     "2": "devolucion",
     "3": "recepcion"
   };
+
+  function textoTallasDesdeJson(tallas) {
+    if (!tallas || typeof tallas !== "object") return "";
+
+    return Object.entries(tallas)
+      .map(([talla, cantidad]) => `${talla}: ${cantidad}`)
+      .join(", ");
+  }
+
+
+  function buscarValorSelectPorTexto(select, texto) {
+    if (!select || !texto) return null;
+
+    const buscado = String(texto).trim().toLowerCase();
+
+    const opcion = Array.from(select.options).find(
+      option =>
+        String(option.textContent || "")
+          .trim()
+          .toLowerCase() === buscado
+    );
+
+    return opcion ? opcion.value : null;
+  }
+
+
+  async function recuperarBorradorExistente() {
+    const session = window.zeroStockSession;
+    const tipoEl = document.getElementById("tipo-informe");
+    const distribuidorEl = document.getElementById("distribuidor");
+    const tbody = document.getElementById("tbody");
+
+    if (
+      !session?.user?.id ||
+      !tipoEl ||
+      !distribuidorEl ||
+      !tbody ||
+      informeEnCursoId ||
+      recuperandoBorrador
+    ) {
+      return;
+    }
+
+    recuperandoBorrador = true;
+
+    try {
+      const {
+        data: borrador,
+        error: errorBorrador
+      } = await client
+        .from("informes")
+        .select("id, tipo, distribuidor")
+        .eq("usuario_id", session.user.id)
+        .eq("estado", "borrador")
+        .maybeSingle();
+
+      if (errorBorrador) throw errorBorrador;
+      if (!borrador) return;
+
+      const {
+        data: productos,
+        error: errorProductos
+      } = await client
+        .from("informe_productos")
+        .select(
+          "codigo, nombre, cantidad, estado_producto, tallas, orden"
+        )
+        .eq("informe_id", borrador.id)
+        .order("orden", { ascending: true });
+
+      if (errorProductos) throw errorProductos;
+
+      informeEnCursoId = borrador.id;
+      window.zeroStockInformeEnCursoId = borrador.id;
+
+      const valorTipo = Object.entries(tipoMapInforme)
+        .find(([, nombre]) => nombre === borrador.tipo)?.[0];
+
+      if (valorTipo) {
+        tipoEl.value = valorTipo;
+        tipoEl.dispatchEvent(
+          new Event("change", { bubbles: true })
+        );
+      }
+
+      const valorDistribuidor =
+        buscarValorSelectPorTexto(
+          distribuidorEl,
+          borrador.distribuidor
+        );
+
+      if (valorDistribuidor !== null) {
+        distribuidorEl.value = valorDistribuidor;
+        distribuidorEl.dispatchEvent(
+          new Event("change", { bubbles: true })
+        );
+      }
+
+      tbody.innerHTML = "";
+
+      (productos || []).forEach(producto => {
+        const fila = tbody.insertRow();
+
+        fila.insertCell(0).textContent =
+          producto.codigo || "";
+
+        const celdaNombre = fila.insertCell(1);
+        celdaNombre.textContent =
+          producto.nombre || "";
+
+        if (producto.estado_producto) {
+          const etiqueta = document.createElement("span");
+          etiqueta.className = "estado-tag";
+          etiqueta.textContent =
+            producto.estado_producto;
+          celdaNombre.appendChild(etiqueta);
+        }
+
+        const celdaCantidad = fila.insertCell(2);
+        celdaCantidad.textContent =
+          producto.cantidad ?? 0;
+
+        const tallasTexto =
+          textoTallasDesdeJson(producto.tallas);
+
+        if (tallasTexto) {
+          celdaCantidad.dataset.tallas =
+            tallasTexto;
+        }
+
+        fila.insertCell(3).textContent = "";
+        fila.insertCell(4).textContent = "";
+        fila.insertCell(5).textContent =
+          producto.estado_producto || "";
+      });
+
+      console.log(
+        "Borrador recuperado desde Supabase:",
+        borrador.id
+      );
+
+    } catch (err) {
+      console.error(
+        "No se pudo recuperar el borrador desde Supabase:",
+        err
+      );
+    } finally {
+      recuperandoBorrador = false;
+    }
+  }
+
 
   async function crearInformeEnCursoSiCorresponde() {
     if (informeEnCursoId || creandoInformeEnCurso) return;
@@ -338,6 +496,8 @@
     if (!tbody) return;
 
     const observer = new MutationObserver(() => {
+      if (recuperandoBorrador) return;
+
       if (tbody.rows.length > 0) {
         if (!informeEnCursoId) {
           crearInformeEnCursoSiCorresponde();
