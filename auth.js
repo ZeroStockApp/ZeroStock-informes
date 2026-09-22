@@ -255,38 +255,47 @@
       (productos || []).forEach(producto => {
         const fila = tbody.insertRow();
 
-        fila.insertCell(0).textContent =
-          producto.codigo || "";
+        const celdaCodigo = fila.insertCell(0);
+        celdaCodigo.textContent = producto.codigo || "";
+        celdaCodigo.classList.add("col-1");
 
         const celdaNombre = fila.insertCell(1);
-        celdaNombre.textContent =
-          producto.nombre || "";
-
-        if (producto.estado_producto) {
-          const etiqueta = document.createElement("span");
-          etiqueta.className = "estado-tag";
-          etiqueta.textContent =
-            producto.estado_producto;
-          celdaNombre.appendChild(etiqueta);
-        }
+        celdaNombre.textContent = producto.nombre || "";
+        celdaNombre.classList.add("col-2");
 
         const celdaCantidad = fila.insertCell(2);
-        celdaCantidad.textContent =
-          producto.cantidad ?? 0;
+        celdaCantidad.textContent = producto.cantidad ?? 0;
+        celdaCantidad.classList.add("col-3");
+        celdaCantidad.classList.add("cantidad");
 
         const tallasTexto =
           textoTallasDesdeJson(producto.tallas);
 
         if (tallasTexto) {
-          celdaCantidad.dataset.tallas =
-            tallasTexto;
+          celdaCantidad.dataset.tallas = tallasTexto;
         }
 
-        fila.insertCell(3).textContent = "";
-        fila.insertCell(4).textContent = "";
-        fila.insertCell(5).textContent =
+        const celdaEditar = fila.insertCell(3);
+        celdaEditar.innerHTML =
+          '<button class="boton-accion" onclick="editarCelda(this)"><i class="far fa-edit"></i></button>';
+        celdaEditar.classList.add("col-4");
+
+        const celdaBorrar = fila.insertCell(4);
+        celdaBorrar.innerHTML =
+          '<button class="boton-accion" onclick="eliminarCelda(this)"><i class="far fa-trash-alt"></i></button>';
+        celdaBorrar.classList.add("col-5");
+
+        const celdaEstado = fila.insertCell(5);
+        celdaEstado.textContent =
           producto.estado_producto || "";
+        celdaEstado.classList.add("col-6");
       });
+
+      // La función original del formulario recalcula el total
+      // cada vez que crea o elimina una fila.
+      if (typeof sumarItems === "function") {
+        sumarItems();
+      }
 
       console.log(
         "Borrador recuperado desde Supabase:",
