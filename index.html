@@ -10,9 +10,57 @@
 <link href="icono_rmc.png" rel="icon" type="image/png" />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 <link href="rmc.css" rel="stylesheet"/>
+<style>
+/* Acceso ZeroStock: aislado del formulario existente */
+#zs-login {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px; box-sizing: border-box; background: #f4f5f7;
+  font-family: Arial, sans-serif;
+}
+.zs-login-card {
+  width: 100%; max-width: 420px; background: #fff; border-radius: 16px;
+  padding: 34px 32px; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,.10);
+}
+.zs-login-logo { display:block; width:70px; height:auto; margin:0 auto 18px; }
+.zs-login-card h1 { margin:0; text-align:center; font-size:26px; color:#1f2937; }
+.zs-login-card .zs-subtitulo { margin:8px 0 28px; text-align:center; color:#6b7280; font-size:14px; }
+.zs-campo { margin-bottom:16px; }
+.zs-campo label { display:block; margin-bottom:7px; color:#374151; font-size:14px; font-weight:600; }
+.zs-campo input { width:100%; box-sizing:border-box; padding:12px 13px; border:1px solid #d1d5db; border-radius:8px; font-size:15px; outline:none; }
+.zs-campo input:focus { border-color:#e91e63; box-shadow:0 0 0 3px rgba(233,30,99,.10); }
+#zs-login-btn { width:100%; border:0; border-radius:8px; padding:12px; background:#e91e63; color:#fff; font-size:15px; font-weight:700; cursor:pointer; }
+#zs-login-btn:disabled { opacity:.65; cursor:wait; }
+#zs-login-error { min-height:20px; margin:14px 0 0; color:#b91c1c; text-align:center; font-size:13px; }
+#zs-sesion { display:none; align-items:center; justify-content:flex-end; gap:10px; max-width:980px; margin:12px auto 0; padding:0 16px; box-sizing:border-box; font-family:Arial,sans-serif; font-size:13px; color:#4b5563; }
+#zs-logout { border:1px solid #d1d5db; background:#fff; border-radius:7px; padding:7px 10px; cursor:pointer; color:#374151; }
+@media (max-width:520px) { .zs-login-card { padding:28px 22px; } }
+</style>
 </head>
 <body>
-<div id="contenedor">
+<div id="zs-login">
+  <div class="zs-login-card">
+    <img class="zs-login-logo" src="logo_rmc.png" alt="Logo" />
+    <h1>ZeroStock</h1>
+    <p class="zs-subtitulo">Acceso al sistema de informes</p>
+    <form id="zs-login-form">
+      <div class="zs-campo">
+        <label for="zs-email">Correo electrónico</label>
+        <input id="zs-email" type="email" autocomplete="username" required />
+      </div>
+      <div class="zs-campo">
+        <label for="zs-password">Contraseña</label>
+        <input id="zs-password" type="password" autocomplete="current-password" required />
+      </div>
+      <button id="zs-login-btn" type="submit">Ingresar</button>
+      <div id="zs-login-error" role="alert" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+<div id="zs-sesion">
+  <span id="zs-usuario"></span>
+  <button id="zs-logout" type="button">Cerrar sesión</button>
+</div>
+<div id="contenedor" style="display:none;">
 <div id="principal">
 <div id="error"></div>
 <div id="bienvenida">
@@ -231,6 +279,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <script crossorigin="anonymous" src="https://kit.fontawesome.com/225ba68665.js"></script>
 <script src="generador_pdf.js?v=1"></script>
 <script src="productos_rmc.js"></script>
@@ -239,6 +289,12 @@
 <script src="exportar_excel.min.js"></script>
 <script src="guardar_archivo.min.js"></script>
 </div></body></html>
+
+
+
+
+
+
 
 
 
