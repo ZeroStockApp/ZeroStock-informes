@@ -137,6 +137,8 @@
 
   let informeEnCursoId = null;
   let creandoInformeEnCurso = false;
+  let sincronizandoProductos = false;
+  let sincronizacionPendiente = false;
 
   const tipoMapInforme = {
     "1": "inventario",
@@ -195,6 +197,8 @@
         "Informe en curso creado correctamente en Supabase:",
         informe.id
       );
+
+      await sincronizarProductosBorrador();
     } catch (err) {
       console.error(
         "No se pudo crear el informe en curso en Supabase:",
@@ -205,13 +209,114 @@
     }
   }
 
+  async function sincronizarProductosBorrador() {
+    const tbody = document.getElementById("tbody");
+
+    if (!informeEnCursoId || !tbody) return;
+
+    if (sincronizandoProductos) {
+      sincronizacionPendiente = true;
+      return;
+    }
+
+    sincronizandoProductos = true;
+
+    try {
+      const productos = Array.from(tbody.rows).map(
+        (fila, index) => {
+          const codigo = (
+            fila.cells[0]?.innerText || ""
+          ).trim();
+
+          const celdaNombre = fila.cells[1];
+
+          const cantidad = parseInt(
+            (fila.cells[2]?.innerText || "0").trim(),
+            10
+          ) || 0;
+
+          const estadoProducto = (
+            fila.cells[5]?.innerText || ""
+          ).trim();
+
+          let nombre = (
+            celdaNombre?.innerText || ""
+          ).trim();
+
+          const etiquetaEstado =
+            celdaNombre?.querySelector?.(".estado-tag");
+
+          if (etiquetaEstado) {
+            nombre = nombre
+              .replace(etiquetaEstado.textContent, "")
+              .trim();
+          }
+
+          return {
+            informe_id: informeEnCursoId,
+            codigo: codigo || null,
+            nombre: nombre,
+            cantidad: cantidad,
+            estado_producto:
+              estadoProducto && estadoProducto !== "0"
+                ? estadoProducto
+                : null,
+            tallas: convertirTallas(
+              fila.cells[2]?.dataset?.tallas || ""
+            ),
+            orden: index + 1
+          };
+        }
+      );
+
+      const { error: errorBorrar } = await client
+        .from("informe_productos")
+        .delete()
+        .eq("informe_id", informeEnCursoId);
+
+      if (errorBorrar) throw errorBorrar;
+
+      if (productos.length > 0) {
+        const { error: errorInsertar } = await client
+          .from("informe_productos")
+          .insert(productos);
+
+        if (errorInsertar) throw errorInsertar;
+      }
+
+      console.log(
+        "Productos del borrador sincronizados en Supabase:",
+        informeEnCursoId
+      );
+    } catch (err) {
+      console.error(
+        "No se pudieron sincronizar los productos del borrador:",
+        err
+      );
+    } finally {
+      sincronizandoProductos = false;
+
+      if (sincronizacionPendiente) {
+        sincronizacionPendiente = false;
+        sincronizarProductosBorrador();
+      }
+    }
+  }
+
+
   function activarObservadorInformeEnCurso() {
     const tbody = document.getElementById("tbody");
     if (!tbody) return;
 
     const observer = new MutationObserver(() => {
       if (tbody.rows.length > 0) {
-        crearInformeEnCursoSiCorresponde();
+        if (!informeEnCursoId) {
+          crearInformeEnCursoSiCorresponde();
+        } else {
+          sincronizarProductosBorrador();
+        }
+      } else if (informeEnCursoId) {
+        sincronizarProductosBorrador();
       }
     });
 
