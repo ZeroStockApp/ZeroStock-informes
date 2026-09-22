@@ -33,13 +33,26 @@
     userLabel.textContent = "";
   }
 
-  function showApp(session) {
+  async function showApp(session) {
     login.style.display = "none";
     app.style.display = "block";
     sessionBar.style.display = "flex";
-    userLabel.textContent = session?.user?.email || "";
     errorBox.textContent = "";
-  }
+
+    const { data: perfil, error } = await client
+      .from("perfiles")
+      .select("nombre, rol, activo")
+      .eq("id", session.user.id)
+      .single();
+
+    if (error || !perfil) {
+      console.error("No se pudo cargar el perfil:", error);
+      userLabel.textContent = session?.user?.email || "";
+      return;
+    }
+
+    userLabel.textContent = perfil.nombre;
+}
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
