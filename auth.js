@@ -180,7 +180,7 @@
         .insert({
           usuario_id: session.user.id,
           tipo: tipo,
-          estado: "en curso",
+          estado: "borrador",
           distribuidor: nombreDistribuidor
         })
         .select("id")
