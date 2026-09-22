@@ -26,7 +26,6 @@
     SUPABASE_KEY
   );
 
-  // Compartimos el mismo cliente autenticado con rmc.js.
   window.zeroStockSupabase = client;
   window.zeroStockSession = null;
   window.zeroStockPerfil = null;
@@ -45,6 +44,7 @@
     app.style.display = "block";
     sessionBar.style.display = "flex";
     errorBox.textContent = "";
+
     window.zeroStockSession = session;
 
     const { data: perfil, error } = await client
@@ -121,4 +121,274 @@
       showLogin();
     }
   })();
+
+
+  // =========================================================
+  // GUARDADO DEL INFORME EN SUPABASE
+  // =========================================================
+
+  let guardandoInforme = false;
+
+  function convertirTallas(texto) {
+    if (!texto) return null;
+
+    const resultado = {};
+
+    texto.split(",").forEach(par => {
+      const partes = par.split(":");
+
+      if (partes.length < 2) return;
+
+      const talla = partes[0].trim().toLowerCase();
+      const valor = parseInt(partes[1].trim(), 10);
+
+      if (
+        talla &&
+        !Number.isNaN(valor) &&
+        valor > 0
+      ) {
+        resultado[talla] = valor;
+      }
+    });
+
+    return Object.keys(resultado).length
+      ? resultado
+      : null;
+  }
+
+
+  async function guardarInformeFinalizado() {
+
+    if (guardandoInforme) return;
+
+    const session = window.zeroStockSession;
+
+    const tipoEl =
+      document.getElementById("tipo-informe");
+
+    const distribuidorEl =
+      document.getElementById("distribuidor");
+
+    const tbody =
+      document.getElementById("tbody");
+
+    if (
+      !session?.user?.id ||
+      !tipoEl ||
+      !distribuidorEl ||
+      !tbody
+    ) {
+      return;
+    }
+
+    if (
+      distribuidorEl.selectedIndex <= 0 ||
+      tbody.rows.length === 0
+    ) {
+      return;
+    }
+
+
+    const tipoMap = {
+      "1": "inventario",
+      "2": "devolucion",
+      "3": "recepcion"
+    };
+
+    const tipo =
+      tipoMap[String(tipoEl.value)];
+
+    if (!tipo) return;
+
+
+    const nombreDistribuidor = (
+      distribuidorEl.selectedOptions?.[0]?.text ||
+      distribuidorEl.value ||
+      ""
+    ).trim();
+
+
+    guardandoInforme = true;
+
+    try {
+
+      const ahora =
+        new Date().toISOString();
+
+
+      // =========================
+      // CREAR INFORME
+      // =========================
+
+      const {
+        data: informe,
+        error: errorInforme
+      } = await client
+        .from("informes")
+        .insert({
+          usuario_id: session.user.id,
+          tipo: tipo,
+          estado: "finalizado",
+          distribuidor: nombreDistribuidor,
+          finalizado_en: ahora
+        })
+        .select("id")
+        .single();
+
+
+      if (errorInforme) {
+        throw errorInforme;
+      }
+
+
+      // =========================
+      // PREPARAR PRODUCTOS
+      // =========================
+
+      const productos =
+        Array.from(tbody.rows).map(
+          (fila, index) => {
+
+            const codigo = (
+              fila.cells[0]?.innerText || ""
+            ).trim();
+
+
+            const celdaNombre =
+              fila.cells[1];
+
+
+            const cantidad =
+              parseInt(
+                (
+                  fila.cells[2]?.innerText ||
+                  "0"
+                ).trim(),
+                10
+              ) || 0;
+
+
+            const estadoProducto = (
+              fila.cells[5]?.innerText || ""
+            ).trim();
+
+
+            let nombre = (
+              celdaNombre?.innerText || ""
+            ).trim();
+
+
+            // Quitar del nombre la etiqueta
+            // visual del defecto.
+            const etiquetaEstado =
+              celdaNombre?.querySelector?.(
+                ".estado-tag"
+              );
+
+
+            if (etiquetaEstado) {
+              nombre = nombre
+                .replace(
+                  etiquetaEstado.textContent,
+                  ""
+                )
+                .trim();
+            }
+
+
+            return {
+
+              informe_id:
+                informe.id,
+
+              codigo:
+                codigo || null,
+
+              nombre:
+                nombre,
+
+              cantidad:
+                cantidad,
+
+              estado_producto:
+                estadoProducto &&
+                estadoProducto !== "0"
+                  ? estadoProducto
+                  : null,
+
+              tallas:
+                convertirTallas(
+                  fila.cells[2]
+                    ?.dataset
+                    ?.tallas || ""
+                ),
+
+              orden:
+                index + 1
+            };
+          }
+        );
+
+
+      // =========================
+      // GUARDAR PRODUCTOS
+      // =========================
+
+      const {
+        error: errorProductos
+      } = await client
+        .from("informe_productos")
+        .insert(productos);
+
+
+      if (errorProductos) {
+        throw errorProductos;
+      }
+
+
+      console.log(
+        "Informe guardado correctamente en Supabase:",
+        informe.id
+      );
+
+
+    } catch (err) {
+
+      console.error(
+        "No se pudo guardar el informe en Supabase:",
+        err
+      );
+
+      alert(
+        "El PDF puede descargarse, pero el informe no pudo guardarse en el sistema. Avísale al administrador antes de cerrar esta página."
+      );
+
+    } finally {
+
+      guardandoInforme = false;
+
+    }
+  }
+
+
+  // =========================================================
+  // AL CREAR EL PDF TAMBIÉN GUARDAMOS EL INFORME
+  // =========================================================
+
+  const botonPdf =
+    document.getElementById("boton-pdf") ||
+    document.getElementById(
+      "boton-crear-pdf"
+    );
+
+
+  if (botonPdf) {
+
+    botonPdf.addEventListener(
+      "click",
+      guardarInformeFinalizado
+    );
+
+  }
+
 })();
