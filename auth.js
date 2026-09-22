@@ -622,23 +622,46 @@
 
 
       // =========================
-      // CREAR INFORME
+      // FINALIZAR INFORME EN CURSO
+      // Si existe un borrador, convertimos ESE MISMO informe
+      // en finalizado. Solo creamos uno nuevo si no hay borrador.
       // =========================
 
-      const {
-        data: informe,
-        error: errorInforme
-      } = await client
-        .from("informes")
-        .insert({
-          usuario_id: session.user.id,
-          tipo: tipo,
-          estado: "finalizado",
-          distribuidor: nombreDistribuidor,
-          finalizado_en: ahora
-        })
-        .select("id")
-        .single();
+      let informe;
+      let errorInforme;
+
+      if (informeEnCursoId) {
+        const resultado = await client
+          .from("informes")
+          .update({
+            tipo: tipo,
+            estado: "finalizado",
+            distribuidor: nombreDistribuidor,
+            finalizado_en: ahora
+          })
+          .eq("id", informeEnCursoId)
+          .eq("usuario_id", session.user.id)
+          .select("id")
+          .single();
+
+        informe = resultado.data;
+        errorInforme = resultado.error;
+      } else {
+        const resultado = await client
+          .from("informes")
+          .insert({
+            usuario_id: session.user.id,
+            tipo: tipo,
+            estado: "finalizado",
+            distribuidor: nombreDistribuidor,
+            finalizado_en: ahora
+          })
+          .select("id")
+          .single();
+
+        informe = resultado.data;
+        errorInforme = resultado.error;
+      }
 
 
       if (errorInforme) {
@@ -755,6 +778,10 @@
         "Informe guardado correctamente en Supabase:",
         informe.id
       );
+
+      // El borrador ya quedó finalizado; liberar el informe en curso.
+      informeEnCursoId = null;
+      window.zeroStockInformeEnCursoId = null;
 
 
     } catch (err) {
