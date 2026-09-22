@@ -1,0 +1,246 @@
+
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Informe Control Stock </title>
+<link href="icono_rmc.png" rel="icon" type="image/png" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
+<link href="rmc.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="contenedor">
+<div id="principal">
+<div id="error"></div>
+<div id="bienvenida">
+  <img src="logo_rmc.png" alt="Logo" />
+  <div id="titulo">Informe Control Stock</div>
+  <p id="mensaje-bienvenida">Elige el tipo de informe para comenzar</p>
+</div>
+<div class="box">
+<label for="tipo-informe">Tipo de informe</label>
+<select id="tipo-informe">
+<option disabled="" hidden="" selected="" value="0"></option>
+<option value="1">Inventario / Balance</option>
+<option value="2">Devolución</option>
+<option value="3">Recepción de carga</option>
+</select>
+</div>
+<!-- BLOQUE QUE SE OCULTA AL INICIO -->
+<div id="formulario-completo" style="display: none;">
+<div class="box">
+<label for="distribuidor">Distribuidor</label>
+<select id="distribuidor" required>
+  <option value="">Seleccione un distribuidor</option>
+  <option>Carla Valentina Gallardo Miranda</option>
+  <option>Claudia Edith Perez Cobo</option>
+  <option>Darly Solange Cartes Placencia</option>
+  <option>Denisse Paulina Castro Almonacid</option>
+  <option>Elizabeth Nathalie Torres Pena</option>
+  <option>Francheska Gisley Vasquez Perez</option>
+  <option>Fredna Odette Cardenas Yanez</option>
+  <option>Jeniffer Alejandra Gallardo Palma</option>
+  <option>Katherine Naara Sanhueza Cid</option>
+  <option>Madeleine Escobar Riquelme</option>
+  <option>Monica Andrea Oliva Quiroga</option>
+  <option>Nayareth Yetsenia Sanhueza Valdez</option>
+  <option>Patricia Alejandra Marcos Villalobos</option>
+  <option>Rolando Eduardo Olavarria Naupayan</option>
+  <option>Solange Stefani Soto Huala</option>
+  <option>Stock Rmc</option>
+  <option>Valentina Beatriz Cancino Maldonado</option>
+  <option>Viviana Erika Soto Oliva</option>
+  <option>Yanira Constanza Espinoza Benavines</option>
+</select>
+
+</div>
+<div class="box">
+<label for="estado">Estado</label>
+<div id="box-estado">
+<div class="estado-item">
+<input checked="" id="estado-bueno" name="estado-item" type="radio"/>
+<label for="estado-bueno">Bueno</label>
+</div>
+<div class="estado-item">
+<input id="estado-defecto" name="estado-item" type="radio"/>
+<label for="estado-defecto">Defectuoso</label>
+</div>
+</div>
+</div>
+<div class="box" id="box-defecto">
+<label for="defecto">Tipo de defecto</label>
+<select id="defecto">
+<option disabled="" hidden="" selected="" value="0"></option>
+<option value="1">Costura abierta</option>
+<option value="2">Diferencia de tamaño</option>
+<option value="3">Mal costurado</option>
+<option value="4">Roto</option>
+<option value="5">Sin adorno</option>
+<option value="6">Otro</option>
+</select>
+</div>
+<div class="box">
+<label for="codigo">Código</label>
+<input id="codigo" type="number"/>
+<button id="boton-buscar"><i class="fas fa-search"></i></button>
+</div>
+<div class="box">
+<label for="nombre">Nombre</label>
+<input disabled="" id="nombre" type="text"/>
+</div>
+<!-- CANTIDAD -->
+<div class="box" id="bloque-cantidad">
+<label for="cantidad">Cantidad</label>
+<input id="cantidad" type="number"/>
+</div>
+<!-- TALLAS -->
+<div class="tallas-grid" id="bloque-tallas">
+<label class="talla-box">
+<span class="talla-label titulo-talla">PP</span>
+<input class="talla-input valor-talla" id="talla-pp" min="0" type="number" value="0"/>
+</label>
+<label class="talla-box">
+<span class="talla-label titulo-talla">P</span>
+<input class="talla-input valor-talla" id="talla-p" min="0" type="number" value="0"/>
+</label>
+<label class="talla-box">
+<span class="talla-label titulo-talla">M</span>
+<input class="talla-input valor-talla" id="talla-m" min="0" type="number" value="0"/>
+</label>
+<label class="talla-box">
+<span class="talla-label titulo-talla">G</span>
+<input class="talla-input valor-talla" id="talla-g" min="0" type="number" value="0"/>
+</label>
+<label class="talla-box">
+<span class="talla-label titulo-talla">GG</span>
+<input class="talla-input valor-talla" id="talla-gg" min="0" type="number" value="0"/>
+</label>
+<label class="talla-box">
+<span class="talla-label titulo-talla">EGG</span>
+<input class="talla-input valor-talla" id="talla-egg" min="0" type="number" value="0"/>
+</label>
+<label class="talla-box">
+<span class="talla-label titulo-talla">EXGG</span>
+<input class="talla-input valor-talla" id="talla-exgg" min="0" type="number" value="0"/>
+</label>
+<label class="talla-box">
+<span class="talla-label titulo-talla">U</span>
+<input class="talla-input valor-talla" id="talla-u" min="0" type="number" value="0"/>
+</label>
+</div>
+<div class="box" id="box-botones">
+  <button class="boton" id="boton-limpiar">Limpiar</button>
+  <button class="boton" id="boton-crear" hidden>Crear XLS</button> <!-- Oculto temporalmente: se usa solo PDF. Quitar el atributo 'hidden' para volver a mostrar. -->
+  <button class="boton" id="boton-pdf">Crear PDF</button>
+  <button class="boton" id="boton-bipear">Bipear</button>
+  <button class="boton" id="boton-agregar">Agregar</button>
+</div>
+<div id="pdf">
+<div id="pdf-encabezado">
+<h1 class="pdf-titulo" id="titulo-informe"></h1>
+<div class="pdf-titulo" id="titulo-distribuidor"></div>
+<div class="pdf-titulo" id="titulo-semana"></div>
+<div class="pdf-titulo" id="titulo-fecha"></div>
+</div>
+<div id="tabla">
+<table>
+<thead>
+<tr>
+<th class="col-1">código</th>
+<th class="col-2" id="item-encabezado">producto</th>
+<th class="col-3">total</th>
+<th class="col-4">editar</th>
+<th class="col-5">borrar</th>
+<th class="col-6">estado</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<div id="total">total item: 0</div>
+</div></div>
+
+</div>
+<!-- FIN BLOQUE -->
+<!-- Modales (sin cambios) -->
+<div id="modal-1">
+<div id="m1-contenido">
+<div id="m1-encabezado">
+<div id="m1-titulo">Buscar Producto Por Nombre</div>
+<button class="btn-cerrar-modal" id="m1-cerrar">&times;</button>
+</div>
+
+<div id="m1-box">
+<input id="m1-consulta" placeholder="ingrese minimo 3 letras" type="text"/>
+<button id="m1-buscar">Buscar</button>
+</div>
+<table id="m1-tabla">
+  <thead>
+    <tr>
+      <th>CÓDIGO</th>
+      <th>PRODUCTO</th>
+      <th>OPCIÓN</th>
+    </tr>
+  </thead>
+<tbody id="m1-tbody"></tbody>
+</table>
+</div>
+</div>
+
+<div id="modal-2">
+  <div id="m2-contenido">
+    <button id="m2-cerrar" aria-label="Cerrar">&times;</button>
+
+    <div id="m2-encabezado">
+      <div id="m2-titulo">Bipea Producto de 1 en 1</div>
+    </div>
+
+    <div id="m2-box">
+      <input id="m2-codigo" type="number" />
+      <input id="m2-nombre" type="text" disabled />
+      <button id="m2-agregar">Agregar</button>
+    </div>
+
+    <table id="m2-tabla">
+      <thead>
+        <tr>
+          <th>CÓDIGO</th>
+          <th>PRODUCTO</th>
+          <th>CANTIDAD</th>
+        </tr>
+      </thead>
+      <tbody id="m2-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+
+<div id="modal-3">
+  <div id="m3-contenido">
+    <button id="m3-cerrar" aria-label="Cerrar">&times;</button>
+    <div id="m3-encabezado">
+      <div id="m3-titulo">Editar Cantidad</div>
+    </div>
+    <div id="m3-box">
+      <input id="m3-cantidad" type="number" />
+      <button id="m3-guardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script crossorigin="anonymous" src="https://kit.fontawesome.com/225ba68665.js"></script>
+<script src="generador_pdf.js?v=1"></script>
+<script src="productos_rmc.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<script src="rmc.js"></script>
+<script src="exportar_excel.min.js"></script>
+<script src="guardar_archivo.min.js"></script>
+</div></body></html>
+
+
+
+
+

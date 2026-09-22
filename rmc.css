@@ -1,0 +1,2017 @@
+@font-face {
+  font-family: 'RomanceFont';
+  src: url('letraRomance.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f6f8;
+  margin: 0;
+  padding: 30px;
+}
+
+h1, h2, h3,
+label {
+  font-family: 'Playfair Display', serif;
+  font-weight: normal; /* ✅ ya no estarán en negrita */
+}
+
+
+
+#contenedor {
+  max-width: 800px;
+  margin: auto;
+  background: white;
+  padding: 25px 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+#titulo {
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-align: center;
+  color: #2c3e50;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Playfair Display', serif;
+
+}
+
+
+.box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+label {
+  display: inline-block;
+  width: 180px;
+  text-transform: none;
+  font-size: 15px;
+  color: #2c3e50;
+}
+
+input,
+select {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+input:disabled {
+  background-color: #f2f2f2;
+}
+
+#box-botones {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+  justify-content: center;
+}
+
+.boton {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#boton-limpiar {
+  background-color: #e74c3c;
+}
+#boton-limpiar:hover {
+  background-color: #c0392b;
+}
+
+#boton-crear {
+  background-color: #27ae60;
+}
+#boton-crear:hover {
+  background-color: #1e8449;
+}
+
+#boton-bipear {
+  background-color: #c2185b;
+}
+#boton-bipear:hover {
+  background-color: #a11549;
+}
+
+#boton-agregar {
+  background-color: #2980b9;
+}
+#boton-agregar:hover {
+  background-color: #21618c;
+}
+
+/* Tallas grid */
+.tallas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); /* más compactas */
+  gap: 6px; /* menos espacio entre tallas */
+  margin-top: 10px;
+}
+
+
+.talla-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ecf0f1;
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+  font-weight: bold;
+  min-width: 70px;
+  height: 90px;
+}
+
+.talla-label {
+  font-size: 14px;
+  color: #34495e;
+  margin-top: 6px;
+}
+
+.talla-input {
+  width: 60px;
+  text-align: center;
+  border: none;
+  background: transparent;
+  border-top: 1px solid #bbb;
+  font-size: 16px;
+}
+
+#bloque-tallas {
+  width: 100%;
+  background-color: #ecf0f1;
+  border-radius: 10px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+
+
+
+#pdf {
+    margin-top: 20px;      /* menos espacio arriba */
+    margin-left: 5px;      /* margen izquierda más pequeña */
+    margin-right: 5px;     /* margen derecha más pequeña */
+    background: #fafafa;
+    border: 1px solid #ddd;
+    padding: 5px;          /* espacio interno reducido */
+    border-radius: 8px;
+    width: 100%;           /* usar todo el ancho disponible */
+}
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+/* Encabezado rosado SOLO para la tabla principal (pantalla) */
+#tabla thead th{
+  background-color: #fce4ec; /* rosado claro */
+  color: #ad1457;            /* rosado oscuro texto */
+  border-bottom: 2px solid #f8bbd0;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+#total {
+  margin-top: 15px;
+  font-weight: bold;
+  text-align: right;
+}
+
+/* Ocultar modales */
+#modal-1,
+#modal-2,
+#modal-3 {
+  display: none;
+}
+
+/* Bloque cantidad - alineado y del mismo tamaño */
+#bloque-cantidad {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#bloque-cantidad label {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+#cantidad {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+/* ====== FIX preciso para el bloque de tallas ====== */
+
+/* El contenedor gris no se sale más */
+#bloque-tallas {
+  width: 100%;
+  background-color: #ecf0f1;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  overflow: hidden; /* por si acaso */
+}
+
+/* Anulamos el label global solo dentro de tallas */
+.tallas-grid label {
+  width: auto !important;
+}
+
+/* Cada “cajita” de talla: input arriba, etiqueta abajo, todo centrado */
+.talla-box {
+  display: flex;
+  flex-direction: column-reverse;   /* input arriba, texto abajo */
+  align-items: center;
+  justify-content: center;
+  background: transparent;          /* el gris ya lo da el bloque padre */
+  border-radius: 6px;
+  padding: 6px 4px;
+  min-width: 72px;
+  height: 90px;                      /* asegura alineación vertical uniforme */
+  box-sizing: border-box;
+}
+
+/* Texto de la talla (PP, P, M, …) */
+.talla-label {
+  font-size: 14px;
+  color: #34495e;
+  margin-top: 6px;
+  line-height: 1;
+}
+
+/* Input numérico: ancho suficiente para 3 dígitos, bien centrado */
+.talla-input {
+  width: 70px;
+  text-align: center;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 16px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  padding: 4px 2px;
+}
+
+/* La grilla: más compacta y sin desbordar */
+.tallas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* ITEM ESTADO alineado horizontal y centrado */
+#box-estado {
+  display: flex;
+  justify-content: center;     /* centrado total horizontal */
+  gap: 50px;                   /* espacio entre BUENO y CON DEFECTO */
+  align-items: center;
+  margin-left: 0;              /* quitamos margen lateral */
+  margin-top: -5px;
+}
+
+.estado-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#box-estado input[type="radio"] {
+  margin: 0;
+}
+
+#box-estado label {
+  transform: translateY(2px);  /* Alinea verticalmente con los radios */
+}
+
+
+#formulario-completo {
+  display: none;
+}
+
+/* === Estilos de bienvenida con logo === */
+#bienvenida {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#logo-romance {
+  width: 80px;
+  margin-bottom: 10px;
+}
+
+#mensaje-bienvenida {
+  font-size: 16px;
+  color: #c2185b;
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 100px;
+  letter-spacing: 0.7px;
+  text-align: center;
+  font-family: 'Segoe UI', sans-serif;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+}
+
+
+/* Ampliamos el contenedor blanco */
+#contenedor {
+  max-width: 880px;
+  padding: 35px 50px;
+}
+
+.bienvenida-activa #titulo {
+  margin-bottom: 60px;
+}
+
+.contenido-activo #titulo {
+  margin-bottom: 50px;
+}
+
+/* === MODAL 3 flotante centrado === */
+#modal-3 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* fondo oscuro */
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#modal-3.mostrar {
+  display: flex;
+}
+
+#m3-contenido {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 0 12px rgba(0,0,0,0.3);
+  text-align: center;
+  min-width: 260px;
+}
+
+#m3-titulo {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#m3-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#m3-box input {
+  font-size: 16px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  text-align: center;
+}
+
+#m3-guardar {
+  background-color: #c2185b;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+#m3-guardar:hover {
+  background-color: #a11549;
+}
+
+
+#m3-cerrar:hover {
+  background-color: #AD1457;
+}
+
+
+#contenedor select {
+  text-transform: capitalize;
+}
+
+/* === MODAL 1 centrado como el modal 3 === */
+#modal-1 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* fondo oscuro */
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#modal-1.modal-flotante {
+  display: flex;
+}
+
+#m1-contenido {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.3);
+  text-align: center;
+  min-width: 260px;
+  max-height: 90vh;
+  overflow-y: auto;
+  min-height: 160px;
+
+}
+
+/* ==== ESTILO MODAL BUSQUEDA ITEM ==== */
+#modal-busqueda .modal-content {
+  border-radius: 12px;
+  padding: 20px;
+  width: 90%;
+  max-width: 700px;
+}
+
+#modal-busqueda .modal-content h3 {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+/* Cambiar barra de encabezado del modal */
+#modal-busqueda .modal-content h3 {
+  background-color: #a442a2;
+  color: white;
+  padding: 10px;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Botón de agregar (con símbolo +) */
+#modal-busqueda button.agregar-item {
+  background-color: #a442a2;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#modal-busqueda button.agregar-item:hover {
+  background-color: #8c2b8c;
+}
+
+.modal-personalizado {
+  background-color: rgba(233, 30, 99, 0.2); /* fondo lila suave */
+  border: 2px solid #c2185b;                /* borde lila oscuro */
+  box-shadow: 0 4px 10px rgba(194, 24, 91, 0.4);
+  border-radius: 12px;
+}
+
+/* === CORRECCIÓN FINAL DE MODAL 1 === */
+#m1-contenido {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.3);
+  text-align: center;
+  min-width: 260px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+#m1-tabla thead {
+  background-color: #c2185b; /* Morado igual al botón "guardar" */
+  color: white;
+}
+
+#m1-tabla th {
+  padding: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+#m1-box button {
+  background-color: #c2185b;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#m1-box button:hover {
+  background-color: #a11549;
+}
+
+/* === ESTILO UNIFICADO PARA MODALES CON CAJITA ROSADA === */
+#m1-contenido,
+#m2-contenido,
+#m3-contenido {
+  background: #fce4ec;
+  border: 2px solid #c2185b;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(194, 24, 91, 0.3);
+  text-align: center;
+  min-width: 260px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+
+/* === BOTÓN FUCSIA PERSONALIZADO === */
+.btn-fucsia {
+  background-color: #c2185b;
+  color: white;
+  border: none;
+  font-weight: bold;
+  padding: 5px 12px;
+  margin: 4px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.btn-fucsia:hover {
+  background-color: #a11549;
+}
+
+/* Color personalizado para encabezado del modal 1 */
+#m1-tabla thead th {
+  background-color: #fce4ec; /* Fondo rosado claro */
+  color: #ad1457; /* Texto rosado oscuro */
+  border-bottom: 2px solid #f8bbd0;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.btn-cerrar-modal {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  background-color: #C81066;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+#m1-contenido {
+  position: relative;
+}
+
+
+.btn-cerrar-modal:hover {
+  background-color: #e02d7a;
+  transform: scale(1.1);
+}
+
+#m1-cerrar {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  background-color: #C2185B; /* Color corazón */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, top 0.25s ease;
+}
+
+/* Cuando el buscador tiene texto, bajamos un poquito la X */
+#m1-contenido.busqueda-activa #m1-cerrar {
+  top: 15px;
+}
+
+/* Ajuste de posición de la X cuando el input está vacío */
+#m1-consulta:placeholder-shown ~ #m1-cerrar {
+  top: 10px; /* sube la X un poco */
+}
+
+
+#m1-cerrar:hover {
+  background-color: #AD1457; /* más oscuro al pasar el cursor */
+}
+/* Ajuste de título en modal de búsqueda */
+#m1-titulo {
+  margin-bottom: 20px; /* espacio con el input */
+  text-transform: none; /* no forzar mayúsculas */
+  font-weight: bold; /* negrita */
+}
+
+/* Botón PDF lila */
+#boton-pdf { background-color: #a442a2; }
+#boton-pdf:hover { background-color: #8c2b8c; }
+
+/* Estilos compactos SOLO para exportar PDF */
+#pdf.pdf-compact table { table-layout: fixed; width: 100%; }
+#pdf.pdf-compact th, 
+#pdf.pdf-compact td { padding: 6px; font-size: 12px; word-wrap: break-word; }
+
+/* Tabla con tallas en una sola fila */
+/* Anchos para PDF vertical SIN columna ESTADO */
+#pdf.pdf-compact .tabla-tallas th:nth-child(1)  { width: 12%; } /* CODIGO */
+#pdf.pdf-compact .tabla-tallas th:nth-child(2)  { width: 34%; } /* ITEM   */
+#pdf.pdf-compact .tabla-tallas th:nth-child(3)  { width: 6%;  } /* CANT   */
+
+/* 8 columnas de tallas = 48% (8 x 6%) */
+#pdf.pdf-compact .tabla-tallas th:nth-child(4),
+#pdf.pdf-compact .tabla-tallas th:nth-child(5),
+#pdf.pdf-compact .tabla-tallas th:nth-child(6),
+#pdf.pdf-compact .tabla-tallas th:nth-child(7),
+#pdf.pdf-compact .tabla-tallas th:nth-child(8),
+#pdf.pdf-compact .tabla-tallas th:nth-child(9),
+#pdf.pdf-compact .tabla-tallas th:nth-child(10),
+#pdf.pdf-compact .tabla-tallas th:nth-child(11) { width: 6%; }
+
+
+/* Expandir el ancho SOLO cuando exportamos a PDF */
+/* ——— Ajuste exacto para márgenes reducidos en PDF ——— */
+body.pdf-full #contenedor {
+  max-width: none !important;
+  width: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+body.pdf-full #pdf {
+  width: 255mm !important;       /* 🔹 Un poco menos de Letter para evitar cortes */
+  max-width: 255mm !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+
+
+body.pdf-full #pdf table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+#pdf-encabezado {
+  text-align: center;       
+  margin-bottom: 50px;       /* MÁS espacio con la tabla */
+  font-family: 'Segoe UI', sans-serif;
+}
+
+#pdf-encabezado .pdf-titulo {
+  font-size: 16px;           /* más grande que antes */
+  margin: 4px 0;             /* más espacio entre líneas */
+}
+
+#titulo-informe {
+  font-size: 60px;           /* aún más grande */
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+#titulo-distribuidor {
+  font-weight: 600;
+  color: #555;
+  text-transform: capitalize; /* Forzamos primera letra mayúscula */
+}
+
+#titulo-fecha {
+  font-style: italic;
+  color: #777;
+  text-transform: capitalize; /* Para que diga "Creado" con C mayúscula */
+}
+
+/* Espacio extra en la primera columna para que no se corte al exportar PDF */
+body.pdf-full #pdf table th:first-child,
+body.pdf-full #pdf table td:first-child {
+  padding-left: 4mm; /* margen interno seguro */
+}
+
+/* Asegurar que los productos no se fuercen a mayúsculas */
+#pdf td { text-transform: none !important; }
+
+#tabla td { text-transform: none !important; }
+
+/* --- PANTALLA: alinear a la izquierda la columna PRODUCTO --- */
+#tabla td.col-2 {
+  text-align: left;
+}
+
+/* --- PANTALLA: capitalizar solo la columna PRODUCTO --- */
+#tabla td.col-2 {
+  text-transform: capitalize; /* primera letra de cada palabra en mayúscula */
+  text-align: left;           /* mantiene alineado a la izquierda */
+}
+
+#tabla td.col-2 { text-align: left; }
+
+/* --- PANTALLA: mejor legibilidad de la tabla principal --- */
+#tabla table th,
+#tabla table td {
+  font-size: 15px;      /* +1 puntito respecto a lo que tienes */
+  padding: 10px 12px;   /* más altura de fila */
+  line-height: 1.3;     /* respira un poco más */
+}
+
+/* === MODAL 2 centrado como el modal 1 === */
+#modal-2 {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);  /* fondo oscuro */
+  display: none;                /* se muestra con display:flex desde JS */
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Para poder posicionar la X en la esquina */
+#m2-contenido { position: relative; }
+
+/* Botón de cerrar (igual al modal 1) */
+#m2-cerrar {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  background-color: #C2185B;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s ease, top 0.25s ease;
+}
+#m2-cerrar:hover { background-color: #AD1457; }
+
+/* Encabezado rosado en la tabla de BIPEAR (como el buscador) */
+#m2-tabla thead th {
+  background-color: #fce4ec;   /* rosado claro */
+  color: #ad1457;              /* texto rosado oscuro */
+  border-bottom: 2px solid #f8bbd0;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 8px;
+}
+
+/* Igual que #m1-box button */
+#m2-box button {
+  background-color: #c2185b;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#m2-box button:hover { background-color: #a11549; }
+
+/* --- Ajuste visual modal BIPEAR --- */
+#modal-bipear .modal-title {
+    font-weight: bold;      /* Negrita */
+    margin-top: -5px;       /* Sube el texto un poquito */
+}
+
+#modal-bipear .modal-content {
+    width: 350px;           /* Igual ancho al modal de buscar */
+    max-width: 100%;
+}
+
+#modal-bipear .modal-dialog {
+    max-width: 370px;       /* Ajusta el tamaño del cuadro */
+}
+
+#modal-bipear .modal-footer {
+    border-top: none;       /* Quita la línea de abajo si la hubiera */
+}
+
+/* Ajuste título modal BIPEAR */
+#modal-bipear h4, 
+#modal-bipear h5, 
+#modal-bipear h6 {
+    font-weight: bold;   /* Negrita */
+    margin-top: -8px;    /* Sube un poquito el texto */
+    margin-bottom: 10px; /* Deja espacio abajo */
+    text-align: center;  /* Centrado */
+}
+
+/* Ajustes del título del modal BIPEAR */
+#m2-titulo {
+    font-weight: bold;      /* Negrita */
+    margin-top: -8px;       /* Lo sube un poco */
+    margin-bottom: 10px;    /* Espacio abajo */
+    text-align: center;     /* Centrado */
+}
+
+/* ===== ESTILO PARA BOTÓN DE CIERRE MODAL 3 (Editar Cantidad) ===== */
+#m3-encabezado {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ccc;
+}
+
+#m3-titulo {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+#m3-cerrar {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #c0392b;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+#m3-cerrar:hover {
+  transform: scale(1.3);
+}
+
+#m3-cerrar {
+  position: absolute;
+  right: 12px;
+  top: 6px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #c0392b;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+/* Botón de cerrar en modal */
+.btn-cerrar-modal {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  color: #d9534f;
+  border-radius: 50%;
+  font-size: 14px;
+  padding: 4px 8px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-cerrar-modal:hover {
+  background-color: #f8d7da;
+}
+
+#m3-cerrar {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  background-color: #C2185B; /* Color corazón */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, top 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#m3-cerrar:hover {
+  background-color: #AD1457; /* más oscuro al pasar el cursor */
+}
+
+/* Cerrar modal 2: igual que modal 1 y 3 */
+#m2-cerrar {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  background-color: #C2185B;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, top 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#m2-cerrar:hover {
+  background-color: #AD1457;
+}
+
+/* 1) El contenedor del modal 2 con tamaño mínimo y referencia de posición */
+#m2-contenido {
+  position: relative;      /* ya lo tienes, no pasa nada si se repite */
+  min-width: 520px;        /* da ancho suficiente para los 3 controles */
+  min-height: 160px;       /* asegura altura para el encabezado y el box */
+}
+
+/* 2) Que el título no se suba ni se solape */
+#m2-titulo {
+  margin-top: 0;           /* quita el -8px que lo “subía” demasiado */
+  margin-bottom: 12px;     /* espacio debajo del título */
+  text-align: center;
+  font-weight: bold;
+}
+
+/* 3) Ordenar el renglón de inputs y botón */
+#m2-box {
+  display: flex;           /* en línea pero controlado */
+  gap: 8px;                /* espacio entre controles */
+  justify-content: center; /* centrado dentro del modal */
+  flex-wrap: wrap;         /* si falta espacio, baja a otra línea sin salirse */
+}
+
+/* =========================
+   MODALES — ESTILO UNIFICADO
+   ========================= */
+
+/* Contenedor de los 3 modales (mismo tamaño y padding) */
+#m1-contenido,
+#m2-contenido,
+#m3-contenido {
+  position: relative;          /* referencia para posicionar la X */
+  min-width: 520px;            /* ancho mínimo cómodo */
+  max-width: 90vw;             /* no se sale en pantallas pequeñas */
+  min-height: 160px;           /* espacio para título + contenido */
+  padding: 16px 20px 20px;     /* separaciones internas parejas */
+  box-sizing: border-box;      /* padding no aumenta el ancho */
+}
+
+/* Títulos centrados y sin desplazamientos raros */
+#m1-titulo,
+#m2-titulo,
+#m3-titulo {
+  margin: 0 0 12px 0;          /* sin márgenes negativos */
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Botón cerrar (X) — igual para los 3 */
+#m1-cerrar,
+#m2-cerrar,
+#m3-cerrar {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  background-color: #C2185B;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, top 0.25s ease;
+  display: flex;               /* centra el símbolo × */
+  align-items: center;
+  justify-content: center;
+}
+
+#m1-cerrar:hover,
+#m2-cerrar:hover,
+#m3-cerrar:hover {
+  background-color: #AD1457;
+}
+
+/* Fila de controles del modal 2 en línea y centrados (sin salirse) */
+#m2-box {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;             /* si no cabe, baja ordenadamente */
+  margin-top: 4px;
+}
+
+/* Asegura que los controles del m2 se midan bien dentro del modal */
+#m2-box input,
+#m2-box select,
+#m2-box button {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+/* Si algún CSS anterior empuja el título del m2 con margen negativo, neutralízalo */
+#m2-titulo { margin-top: 0 !important; }
+
+/* (Opcional) si el modal 2 te sigue quedando muy ancho, baja esta cifra a 500px o 480px */
+
+/* === FIX DEFINITIVO MODAL 2 (override) === */
+
+/* El cuadro rosa debe ser la referencia y contener todo */
+#m2-contenido {
+  position: relative !important;
+  display: block !important;
+  min-width: 520px !important;   /* baja a 500/480 si quieres más angosto */
+  max-width: 90vw !important;
+  min-height: 160px !important;
+  padding: 16px 20px 20px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;   /* evita recortes raros */
+}
+
+/* Título centrado y sin márgenes negativos */
+#m2-titulo {
+  margin: 0 0 12px 0 !important;
+  text-align: center !important;
+  font-weight: bold !important;
+}
+
+/* Fila de controles dentro del modal, centrados y sin salirse */
+#m2-box {
+  display: flex !important;
+  gap: 8px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;        /* si no cabe, baja ordenadito */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Los controles respetan el ancho del cuadro y no lo rompen */
+#m2-box input,
+#m2-box select,
+#m2-box button {
+  flex: 0 1 auto !important;
+  max-width: 100% !important;
+}
+
+/* Botón X igual que los otros (por si algo lo pisa) */
+#m2-cerrar {
+  position: absolute !important;
+  top: 5px !important;
+  right: 15px !important;
+  background-color: #C2185B !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+#m2-cerrar:hover { background-color: #AD1457 !important; }
+
+/* === Encabezado de la tabla principal igual al modal rosado === */
+#tabla thead tr { background-color: #fce4ec !important; }
+#tabla thead th {
+  background-color: #fce4ec !important; /* mismo fondo que el modal 1 */
+  color: #ad1457 !important;            /* texto rosado oscuro del modal */
+  border-bottom: 2px solid #f8bbd0 !important; /* línea igual al modal */
+}
+
+
+/* === Números visibles bajo la etiqueta de cada talla === */
+#bloque-tallas .talla-box {
+  display: flex;
+  flex-direction: column; /* input arriba, luego etiqueta, luego número */
+  align-items: center;
+}
+
+#bloque-tallas .talla-input { order: 1; }
+#bloque-tallas .talla-label { order: 2; }
+
+/* numerito bajo la etiqueta: un tamaño menos */
+#bloque-tallas .talla-num {
+  order: 3;
+  font-size: 11px;   /* antes 12px */
+  color: #555;
+  margin-top: 4px;
+}
+
+/* === Centrar PERFECTO los números dentro de las cajitas de tallas === */
+#bloque-tallas .talla-input {
+  text-align: center !important;      /* centra horizontal */
+  height: 42px !important;            /* alto del input */
+  line-height: 42px !important;       /* = height para centrar vertical */
+  padding: 0 !important;              /* evita que el padding lo baje/suba */
+}
+
+/* (opcional) quita las flechitas de los <input type="number"> */
+#bloque-tallas .talla-input::-webkit-inner-spin-button,
+#bloque-tallas .talla-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+#bloque-tallas .talla-input[type="number"] { -moz-appearance: textfield; }
+
+/* === Ocultar columna ESTADO solo en pantalla (se mantiene para la lógica y el PDF) === */
+#tabla th.col-6,
+#tabla td.col-6 {
+  display: none !important;
+}
+
+/* Ocultar columna ESTADO (se mantiene para la lógica) */
+#tabla th.col-6,
+#tabla td.col-6 { display: none !important; }
+
+/* El texto del estado que se agrega al PRODUCTO */
+#tabla .estado-tag { font-weight: 700; }
+
+/* Mensaje de error de validación */
+#error{
+  display: none;
+  margin: 6px 0 10px 0;
+  color: #c0392b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Mensaje de error centrado y consistente */
+#error{
+  text-align:center;
+  color:#c2185b;      /* tono del sitio */
+  font-weight:600;
+  margin: 6px 0 12px;
+  min-height: 18px;   /* reserva espacio aunque esté vacío */
+}
+
+/* Mensaje de validación centrado */
+#error{
+  display: none;
+  text-align: center;
+  margin: 8px 0 10px;
+  color: #c0392b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.detalle-tallas {
+  font-size: 13px;
+  background-color: #fce4ec; /* rosado claro */
+  color: #880e4f; /* rosa oscuro */
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 6px;
+  text-align: center;
+  border: 1px solid #f8bbd0;
+  font-weight: 500;
+}
+
+.detalle-tallas {
+  position: absolute;
+  bottom: -50px;
+  left: 0;
+  background-color: #ffe3f0; /* rosado claro */
+  color: #000;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.detalle-tallas {
+  position: absolute;
+  background-color: #fff0f6; /* rosado claro */
+  color: #a60055; /* fucsia fuerte */
+  border: 2px solid #f48fb1;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* === Tooltip horizontal de tallas en chips === */
+.tallas-tooltip {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #f8bbd0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 6px 16px rgba(194, 24, 91, 0.25);
+  z-index: 1000;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tallas-tooltip::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-left: 1px solid #f8bbd0;
+  border-top: 1px solid #f8bbd0;
+}
+
+.tallas-tooltip__list {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tallas-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fce4ec; /* rosado claro */
+  color: #ad1457;       /* rosado oscuro */
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid #f8bbd0;
+  white-space: nowrap;
+}
+
+.tallas-chip strong {
+  font-weight: 800;
+  margin-right: 2px;
+}
+
+/* Campos funcionales con fuente clara */
+input,
+select,
+textarea {
+  font-family: Arial, sans-serif;
+}
+
+/* Solo números (como tallas) aún más legibles con Roboto */
+input[type="number"] {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Estilo para campos con números */
+input[type="number"],
+#tabla-pdf td:nth-child(1),   /* Columna de CÓDIGO */
+#tabla-pdf td:nth-child(3),   /* Columna de CANTIDAD */
+#tabla-pdf tfoot td           /* Total de productos */
+{
+  font-family: 'Roboto', sans-serif;
+}
+
+.pdf-font {
+  font-family: Arial, sans-serif !important;
+}
+
+#tabla {
+  font-family: Arial, sans-serif !important;
+}
+
+/* Letras de las tallas (PP, P, M...) */
+.titulo-talla {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;   /* más marcadas que normal, pero sin llegar a bold */
+  color: #2c3e50;     /* gris oscuro, más contraste */
+}
+
+
+/* Números de las tallas (2, 4, 6...) */
+.valor-talla {
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+/* Numeritos de referencia debajo de las tallas */
+.talla-num {
+  font-family: Arial, sans-serif; /* fuente clara */
+  font-weight: bold;              /* más nítido */
+  font-size: 12px;                /* tamaño pequeño */
+  color: #333;                    /* gris oscuro para contraste */
+}
+
+/* 🔧 Ajustes responsive para móvil y tablet */
+
+/* Para móviles (hasta 600px) */
+@media screen and (max-width: 600px) {
+  body {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .contenedor-formulario,
+  .contenedor-principal {
+    padding: 10px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .tallas-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columnas para móviles */
+    gap: 6px;
+  }
+
+  .botones {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Para tablets (601px a 900px) */
+@media screen and (min-width: 601px) and (max-width: 900px) {
+  .tallas-grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 columnas para tablets */
+  }
+
+  .botones {
+    gap: 15px;
+  }
+}
+
+/* ================== ESTILOS RESPONSIVE ================== */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  #principal {
+    width: 100% !important;
+    padding: 10px !important;
+    box-sizing: border-box;
+  }
+
+  h1 {
+    font-size: 24px;
+    text-align: center;
+  }
+
+  label,
+  input,
+  select,
+  button {
+    width: 100% !important;
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+  }
+
+  .talla-box {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 5px;
+  }
+
+  .modal {
+    width: 95% !important;
+    left: 2.5% !important;
+  }
+}
+
+/* ========== AJUSTES PARA MÓVILES ========== */
+@media screen and (max-width: 768px) {
+
+  body {
+    padding: 10px;
+    margin: 0;
+  }
+
+  .contenedor-principal {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  form {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .form-group,
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  select,
+  input[type="text"],
+  input[type="number"],
+  button {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .talla-box {
+    flex: 1 1 20%;
+    text-align: center;
+  }
+
+  .modal-content {
+    width: 95% !important;
+    max-width: 100%;
+    margin: auto;
+  }
+
+  .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .grid-tallas {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .grid-tallas .talla-box {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .boton-agregar,
+  .boton-buscar {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  table {
+    font-size: 14px;
+    overflow-x: auto;
+    display: block;
+    width: 100%;
+  }
+
+}
+
+
+
+/* ================== AJUSTES RESPONSIVOS ================== */
+@media (max-width: 768px) {
+  body {
+    padding: 5px;
+  }
+
+  .formulario {
+    width: 100%;
+    padding: 10px;
+  }
+
+  label, select, input, textarea {
+    font-size: 16px !important;
+  }
+
+  .formulario select,
+  .formulario input,
+  .formulario textarea {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .grupo-input {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .grupo-input label {
+    margin-bottom: 5px;
+  }
+
+  .botones {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .tabla-productos {
+    width: 100% !important;
+    overflow-x: auto;
+    display: block;
+  }
+
+  .talla-box {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px;
+  }
+
+  .talla-box label {
+    font-size: 14px;
+  }
+
+  .talla-box input {
+    height: 30px !important;
+    font-size: 14px;
+  }
+}
+/* ========================================================== */
+
+/* === FIX RESPONSIVE DEFINITIVO === */
+
+/* Móviles hasta 600px */
+@media screen and (max-width: 600px) {
+  #contenedor {
+    max-width: 100% !important;
+    padding: 10px !important;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .tallas-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 columnas de tallas */
+    gap: 6px !important;
+  }
+
+  .talla-box {
+    min-width: auto !important;
+    height: auto !important;
+    padding: 8px 4px !important;
+  }
+
+  .talla-input {
+    width: 100% !important;
+    font-size: 14px !important;
+  }
+
+  #box-botones {
+    flex-direction: column !important;
+    gap: 10px;
+  }
+
+  #box-botones .boton {
+    width: 100% !important;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    font-size: 13px !important;
+  }
+}
+
+/* Tablets 601px–900px */
+@media screen and (min-width: 601px) and (max-width: 900px) {
+  #contenedor {
+    max-width: 95% !important;
+    padding: 20px !important;
+  }
+
+  .tallas-grid {
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 columnas */
+  }
+}
+
+/* === FIX selector en móvil === */
+@media screen and (max-width: 600px) {
+  .box {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .box label {
+    width: 100% !important;
+    margin-bottom: 5px !important;
+    text-align: left !important;
+  }
+
+  .box select,
+  .box input {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 10px !important;
+  }
+}
+
+/* ✅ FIX RESPONSIVE para MODALES en pantallas pequeñas */
+@media screen and (max-width: 600px) {
+  #m1-contenido,
+  #m2-contenido,
+  #m3-contenido {
+    min-width: 90% !important;
+    max-width: 95vw !important;
+    width: 95% !important;
+    padding: 16px 12px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  #m1-box,
+  #m2-box,
+  #m3-box {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  #m1-box input,
+  #m2-box input,
+  #m3-box input,
+  #m1-box select,
+  #m2-box select,
+  #m3-box select,
+  #m1-box button,
+  #m2-box button,
+  #m3-box button {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+}
+
+/* === FIX exclusivo para móviles === */
+@media (max-width: 480px) {
+
+  /* Contenedor de modales: deja espacio para la X */
+  #modal-busqueda .modal-content,
+  #modal-bipear .modal-content,
+  #m1-contenido, #m2-contenido, #m3-contenido {
+    position: relative !important;
+    padding-top: 36px !important;
+    overflow: visible !important;
+    width: 95vw !important;
+    max-width: 95vw !important;
+  }
+
+  /* Botón de cerrar (X) siempre visible y clickeable */
+  #m1-cerrar, #m2-cerrar, #m3-cerrar,
+  #modal-busqueda .btn-cerrar-modal,
+  #modal-bipear   .btn-cerrar-modal {
+    position: absolute !important;
+    top: 6px !important;
+    right: 10px !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 50 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Evitar que adornos tapen la X */
+  #modal-busqueda .modal-content::before,
+  #modal-busqueda .modal-content::after,
+  #modal-bipear   .modal-content::before,
+  #modal-bipear   .modal-content::after {
+    pointer-events: none !important;
+  }
+
+  /* Tablas a 100% del ancho */
+  #modal-busqueda table,
+  #modal-bipear table,
+  #m1-contenido table,
+  #m2-contenido table,
+  #m3-contenido table {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  #modal-busqueda th, #modal-busqueda td,
+  #modal-bipear   th, #modal-bipear   td,
+  #m1-contenido   th, #m1-contenido   td,
+  #m2-contenido   th, #m2-contenido   td,
+  #m3-contenido   th, #m3-contenido   td {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+  }
+}
+
+/* === FIX FINAL para que las tablas de BUSQUEDA y BIPEAR ocupen todo el ancho en móvil === */
+@media (max-width: 600px) {
+
+  /* Contenedor principal del modal: ancho completo */
+  #modal-busqueda .modal-content,
+  #modal-bipear .modal-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    box-sizing: border-box !important;
+    padding: 16px 12px !important;
+  }
+
+  /* Si existe un envoltorio de tabla, forzamos 100% */
+  #modal-busqueda .table-responsive,
+  #modal-bipear .table-responsive,
+  #modal-busqueda .table-container,
+  #modal-bipear .table-container {
+    width: 100% !important;
+    display: block !important;
+    overflow-x: auto !important; /* permite scroll si algo se sale */
+    box-sizing: border-box !important;
+  }
+
+  /* Tabla en sí a 100% y con columnas fijas */
+  #modal-busqueda table,
+  #modal-bipear table {
+    width: 100% !important;
+    min-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    display: table !important; /* 🔥 clave: evita el block que la encoge */
+  }
+
+  /* Encabezado completo y visible */
+  #modal-busqueda thead,
+  #modal-bipear thead {
+    display: table-header-group !important;
+  }
+
+  #modal-busqueda th,
+  #modal-bipear th,
+  #modal-busqueda td,
+  #modal-bipear td {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+  }
+}
+
+/* === FIX FINAL para tablas dentro de #modal-1 (BUSCAR PRODUCTO) === */
+@media (max-width: 600px) {
+  #modal-1 .modal-personalizado,
+  #modal-1 .modal-content,
+  #modal-1 {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    box-sizing: border-box !important;
+    padding: 16px 12px !important;
+  }
+
+  #modal-1 table {
+    width: 100% !important;
+    min-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    display: table !important; /* 🔥 evita que se achique */
+  }
+
+  #modal-1 th,
+  #modal-1 td {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+  }
+}
+
+/* === FIX FINAL para tablas dentro de #modal-2 (BIPEAR PRODUCTO) === */
+@media (max-width: 600px) {
+  #modal-2,
+  #modal-2 .modal-personalizado,
+  #modal-2 .modal-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    box-sizing: border-box !important;
+    padding: 16px 12px !important;
+  }
+
+  #modal-2 table {
+    width: 100% !important;
+    min-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    display: table !important;
+  }
+
+  #modal-2 th,
+  #modal-2 td {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+  }
+}
+
+/* === FIX DEFINITIVO PARA TALLAS EN VERTICAL === */
+@media screen and (max-width: 900px) {
+  /* Aplica a móviles y tablets verticales */
+  .tallas-grid {
+    grid-template-columns: repeat(4, 1fr) !important; /* 4 columnas = 2 filas */
+    gap: 8px !important;
+  }
+}
+
+/* Zebra en la tabla del informe */
+#tabla table tbody tr:nth-child(odd) {
+    background-color: #ffffff; /* blanco */
+}
+
+#tabla table tbody tr:nth-child(even) {
+    background-color: #fdebf3; /* rosadito suave */
+}
+
+/* === CONFIGURACIÓN ÚNICA DE IMPRESIÓN === */
+@media print {
+  @page {
+    size: letter landscape; /* Papel Carta Horizontal */
+    margin: 1cm !important;  /* Margen de seguridad para que la impresora no corte nada */
+  }
+
+  body, html {
+    background-color: white !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* El contenedor NO debe tener un ancho fijo en mm, debe ser 100% */
+  #contenedor, body.pdf-full #contenedor {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Ajuste del área del PDF */
+ body.pdf-full #pdf {
+  max-width: 275mm !important;   /* LIMITE REAL para A4 landscape */
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;   /* Oculta cualquier desborde */
+  box-sizing: border-box !important;
+}
+
+
+  /* Forzamos a que la tabla se encoja para caber en el papel */
+  table {
+    width: 100% !important;
+    table-layout: auto !important; /* Permite que las columnas se ajusten al contenido */
+    font-size: 9pt !important;    /* Letra un poco más pequeña para asegurar espacio */
+  }
+
+  th, td {
+    padding: 4px !important;
+    border: 1px solid #ddd !important;
+  }
+
+  /* Ocultamos los botones para que no salgan en la impresión */
+  #box-botones, .col-4, .col-5 {
+    display: none !important;
+  }
+
+  /* Aseguramos que el total se vea y no se corte */
+  #total {
+    margin-top: 10px !important;
+    width: 100% !important;
+    text-align: right !important;
+  }
+}
+
+/* === AJUSTE DE TABLA ULTRA COMPACTA PARA PDF === */
+body.pdf-full #pdf {
+  width: 255mm !important;
+  max-width: 255mm !important;
+  margin: 0 auto !important;
+  padding: 5mm !important;
+  background-color: white !important;
+  box-sizing: border-box !important;
+}
+
+body.pdf-full #pdf table {
+  width: 100% !important;
+  table-layout: fixed !important; /* 🔹 Obliga a respetar los anchos de abajo */
+  border-collapse: collapse !important;
+}
+
+/* === ANCHOS PRECISOS DE CADA COLUMNA === */
+
+/* 1️⃣ CÓDIGO */
+body.pdf-full #pdf table th:nth-child(1),
+body.pdf-full #pdf table td:nth-child(1) {
+  width: 20mm !important;   /* Código = 2 cm */
+  min-width: 20mm !important;
+  max-width: 20mm !important;
+}
+
+/* 2️⃣ PRODUCTO */
+body.pdf-full #pdf table th:nth-child(2),
+body.pdf-full #pdf table td:nth-child(2) {
+  width: 70mm !important;   /* Producto = 7 cm */
+  min-width: 70mm !important;
+  max-width: 70mm !important;
+  text-align: left !important;
+}
+
+/* 3️⃣ CANTIDAD */
+body.pdf-full #pdf table th:nth-child(3),
+body.pdf-full #pdf table td:nth-child(3) {
+  width: 15mm !important;   /* Cantidad = 1.5 cm */
+  min-width: 15mm !important;
+  max-width: 15mm !important;
+}
+
+/* 4️⃣ COLUMNAS DE TALLAS (PP, P, M, G, GG, EGG, EXGG, U) */
+/* 🔸 Ajustadas para ocupar el espacio restante de forma equilibrada */
+body.pdf-full #pdf table th:nth-child(4),
+body.pdf-full #pdf table td:nth-child(4),
+body.pdf-full #pdf table th:nth-child(5),
+body.pdf-full #pdf table td:nth-child(5),
+body.pdf-full #pdf table th:nth-child(6),
+body.pdf-full #pdf table td:nth-child(6),
+body.pdf-full #pdf table th:nth-child(7),
+body.pdf-full #pdf table td:nth-child(7),
+body.pdf-full #pdf table th:nth-child(8),
+body.pdf-full #pdf table td:nth-child(8),
+body.pdf-full #pdf table th:nth-child(9),
+body.pdf-full #pdf table td:nth-child(9),
+body.pdf-full #pdf table th:nth-child(10),
+body.pdf-full #pdf table td:nth-child(10),
+body.pdf-full #pdf table th:nth-child(11),
+body.pdf-full #pdf table td:nth-child(11) {
+  width: 15mm !important; /* Cada una ≈ 1.5 cm para cubrir bien el ancho total */
+  text-align: center !important;
+  font-size: 9pt !important;
+}
+
+/* === AJUSTE GENERAL === */
+body.pdf-full #pdf th,
+body.pdf-full #pdf td {
+  font-size: 9pt !important;
+  padding: 2px 2px !important;
+  word-wrap: break-word !important;
+}
+
+/* === CONTENEDOR VISUAL === */
+#pdf {
+  margin: 0 auto;
+  max-width: 950px;
+  background-color: white;
+  box-sizing: border-box;
+}
+
