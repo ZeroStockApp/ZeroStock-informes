@@ -2069,6 +2069,7 @@ function refreshTallaNumbers() {
   };
 
   document.addEventListener('keydown', function(e){
+    if (document.getElementById('zs-login') && !document.getElementById('zs-login').classList.contains('oculto')) return;
     const t = e.target;
 
     // Ctrl+P o Cmd+P => Generar PDF con tu función actual
