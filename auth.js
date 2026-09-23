@@ -32,6 +32,10 @@
   window.zeroStockSession = null;
   window.zeroStockPerfil = null;
 
+  // Evita que eventos de renovación de sesión reinicien la navegación.
+  let usuarioAppCargado = null;
+  let cargandoApp = false;
+
   function showLogin() {
     login.style.display = "flex";
     app.style.display = "none";
@@ -43,6 +47,18 @@
   }
 
   async function showApp(session) {
+    // Si Supabase solo renovó/confirmó la misma sesión, actualizamos la sesión
+    // pero conservamos exactamente la pantalla en la que está la usuaria.
+    if (usuarioAppCargado === session?.user?.id && window.zeroStockPerfil) {
+      window.zeroStockSession = session;
+      return;
+    }
+    if (cargandoApp) {
+      window.zeroStockSession = session;
+      return;
+    }
+    cargandoApp = true;
+
     login.style.display = "none";
     app.style.display = "none";
     sessionBar.style.display = "flex";
@@ -60,6 +76,7 @@
       console.error("No se pudo cargar el perfil:", error);
       userLabel.textContent = session?.user?.email || "";
       window.zeroStockPerfil = null;
+      cargandoApp = false;
       return;
     }
 
@@ -81,8 +98,9 @@
     }
     userLabel.textContent = perfil.nombre;
 
-    // Mostrar primero la navegación de ZeroStock. El borrador ya no
-    // se abre automáticamente: la usuaria decide si quiere continuarlo.
+    // Solo la primera carga real de la cuenta abre el menú principal.
+    usuarioAppCargado = session.user.id;
+    cargandoApp = false;
     setTimeout(() => {
       prepararInicioZeroStock();
     }, 0);
@@ -124,6 +142,8 @@
   });
 
   logout.addEventListener("click", async () => {
+    usuarioAppCargado = null;
+    cargandoApp = false;
     await client.auth.signOut();
     showLogin();
   });
@@ -192,10 +212,16 @@
       volverInicio.style.cssText = "display:none;margin:10px auto 8px;max-width:800px;width:100%;padding:0 14px;border:0;background:transparent;color:#c2185b;text-align:left;cursor:pointer;font-weight:600;";
       panelInicio.insertAdjacentElement("afterend", volverInicio);
 
-      volverInicio.addEventListener("click", async () => {
+      volverInicio.addEventListener("click", () => {
+        // Cambio visual inmediato: no depende de ninguna consulta a Supabase.
         app.style.display = "none";
+        panelInicio.style.display = "block";
         volverInicio.style.display = "none";
-        await prepararInicioZeroStock();
+
+        // Después actualizamos el estado del borrador en el menú.
+        prepararInicioZeroStock().catch(err => {
+          console.error("No se pudo actualizar el menú principal:", err);
+        });
       });
     }
 
