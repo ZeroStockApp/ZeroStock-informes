@@ -11,10 +11,8 @@
   const userLabel = document.getElementById("zs-usuario");
   const logout = document.getElementById("zs-logout");
   const app = document.getElementById("contenedor");
-  const volverInicio = document.getElementById("zs-volver-inicio");
-  const volverBtn = document.getElementById("zs-volver-btn");
-  let vistaActual = "inicio";
-  let sesionInicializada = false;
+  let panelInicio = null;
+  let borradorDisponible = null;
 
   if (
     !window.supabase ||
@@ -37,7 +35,7 @@
   function showLogin() {
     login.style.display = "flex";
     app.style.display = "none";
-    if (volverInicio) volverInicio.style.display = "none";
+    if (panelInicio) panelInicio.style.display = "none";
     sessionBar.style.display = "none";
     userLabel.textContent = "";
     window.zeroStockSession = null;
@@ -46,7 +44,7 @@
 
   async function showApp(session) {
     login.style.display = "none";
-    app.style.display = "block";
+    app.style.display = "none";
     sessionBar.style.display = "flex";
     errorBox.textContent = "";
 
@@ -68,10 +66,10 @@
     window.zeroStockPerfil = perfil;
     userLabel.textContent = perfil.nombre;
 
-    // Dar un instante al formulario para terminar de cargar sus opciones
-    // antes de reconstruir un borrador existente.
+    // Mostrar primero la navegación de ZeroStock. El borrador ya no
+    // se abre automáticamente: la usuaria decide si quiere continuarlo.
     setTimeout(() => {
-      recuperarBorradorExistente();
+      prepararInicioZeroStock();
     }, 0);
   }
 
@@ -117,17 +115,8 @@
 
   client.auth.onAuthStateChange((_event, session) => {
     if (session) {
-      window.zeroStockSession = session;
-
-      // Una renovación interna de la sesión no debe sacar a la usuaria
-      // del formulario ni devolverla al menú principal.
-      if (!sesionInicializada) {
-        sesionInicializada = true;
-        showApp(session);
-      }
+      showApp(session);
     } else {
-      sesionInicializada = false;
-      vistaActual = "inicio";
       showLogin();
     }
   });
@@ -136,7 +125,6 @@
     const { data, error } = await client.auth.getSession();
 
     if (!error && data.session) {
-      sesionInicializada = true;
       await showApp(data.session);
     } else {
       showLogin();
@@ -145,68 +133,115 @@
 
 
   // =========================================================
-  // CONTROL DE VISTA Y LIMPIEZA DEL FORMULARIO
+  // NAVEGACIÓN PRINCIPAL DE ZEROSTOCK
   // =========================================================
 
-  function mostrarFormulario() {
-    vistaActual = "formulario";
-    if (volverInicio) volverInicio.style.display = "block";
-    app.style.display = "block";
-    if (typeof panelInicio !== "undefined" && panelInicio) {
+  function crearPanelInicioSiHaceFalta() {
+    if (panelInicio) return panelInicio;
+
+    const estilos = document.createElement("style");
+    estilos.textContent = `
+      #zs-inicio { max-width:800px; margin:18px auto 30px; padding:34px 36px; box-sizing:border-box; background:#fff; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.10); font-family:Arial,sans-serif; }
+      #zs-inicio h1 { margin:0; text-align:center; color:#2c3e50; font-family:'Playfair Display',serif; font-size:30px; }
+      #zs-inicio .zs-inicio-saludo { margin:8px 0 28px; text-align:center; color:#6b7280; font-size:14px; }
+      .zs-inicio-opciones { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+      .zs-inicio-opcion { min-height:150px; padding:22px 18px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; text-align:left; cursor:pointer; transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease; }
+      .zs-inicio-opcion:hover:not(:disabled) { transform:translateY(-2px); border-color:#f8bbd0; box-shadow:0 8px 18px rgba(0,0,0,.08); }
+      .zs-inicio-opcion:disabled { opacity:.48; cursor:default; }
+      .zs-inicio-opcion strong { display:block; margin-bottom:9px; color:#ad1457; font-size:17px; }
+      .zs-inicio-opcion span { color:#6b7280; font-size:13px; line-height:1.45; }
+      .zs-inicio-estado { display:block; margin-top:10px; color:#374151!important; font-weight:700; }
+      @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } }
+    `;
+    document.head.appendChild(estilos);
+
+    panelInicio = document.createElement("section");
+    panelInicio.id = "zs-inicio";
+    panelInicio.innerHTML = `
+      <h1>ZeroStock</h1>
+      <p class="zs-inicio-saludo" id="zs-inicio-saludo"></p>
+      <div class="zs-inicio-opciones">
+        <button class="zs-inicio-opcion" id="zs-crear-informe" type="button"><strong>Crear informe</strong><span>Empieza un informe nuevo.</span></button>
+        <button class="zs-inicio-opcion" id="zs-continuar-informe" type="button" disabled><strong>Informe en curso</strong><span>Continúa el informe que dejaste pendiente.</span><span class="zs-inicio-estado" id="zs-borrador-estado">Buscando informe en curso...</span></button>
+        <button class="zs-inicio-opcion" id="zs-ver-informes" type="button" disabled><strong>Ver informes</strong><span>Consulta tus últimos informes finalizados.</span><span class="zs-inicio-estado">Próximamente</span></button>
+      </div>`;
+    sessionBar.insertAdjacentElement("afterend", panelInicio);
+
+    panelInicio.querySelector("#zs-crear-informe").addEventListener("click", async () => {
+      if (borradorDisponible?.id) {
+        const crearNuevo = window.confirm(
+          "Ya tienes un informe en curso.\n\n¿Seguro que quieres descartarlo y crear un informe nuevo?"
+        );
+
+        if (!crearNuevo) return;
+
+        const session = window.zeroStockSession;
+        if (!session?.user?.id) return;
+
+        try {
+          const { error } = await client
+            .from("informes")
+            .delete()
+            .eq("id", borradorDisponible.id)
+            .eq("usuario_id", session.user.id)
+            .eq("estado", "borrador");
+
+          if (error) throw error;
+
+          // La relación informe_productos -> informes usa ON DELETE CASCADE,
+          // por lo que Supabase elimina automáticamente los productos del borrador.
+          borradorDisponible = null;
+          informeEnCursoId = null;
+          window.zeroStockInformeEnCursoId = null;
+
+        } catch (err) {
+          console.error("No se pudo descartar el informe en curso:", err);
+          alert("No fue posible descartar el informe en curso. Inténtalo nuevamente.");
+          return;
+        }
+      }
+
       panelInicio.style.display = "none";
-    }
+      app.style.display = "block";
+    });
+
+    panelInicio.querySelector("#zs-continuar-informe").addEventListener("click", async () => {
+      if (!borradorDisponible?.id) return;
+      panelInicio.style.display = "none";
+      app.style.display = "block";
+      await recuperarBorradorExistente();
+    });
+    return panelInicio;
   }
 
-  async function volverAlInicio() {
-    vistaActual = "inicio";
+  async function prepararInicioZeroStock() {
+    const session = window.zeroStockSession;
+    if (!session?.user?.id) return;
+    const panel = crearPanelInicioSiHaceFalta();
+    const saludo = panel.querySelector("#zs-inicio-saludo");
+    const btnContinuar = panel.querySelector("#zs-continuar-informe");
+    const estado = panel.querySelector("#zs-borrador-estado");
     app.style.display = "none";
-    if (volverInicio) volverInicio.style.display = "none";
-
-    // No borra ni finaliza el borrador: solo vuelve al menú.
-    if (typeof prepararInicioZeroStock === "function") {
-      await prepararInicioZeroStock();
+    panel.style.display = "block";
+    saludo.textContent = window.zeroStockPerfil?.nombre ? `Hola, ${window.zeroStockPerfil.nombre}` : "";
+    borradorDisponible = null;
+    btnContinuar.disabled = true;
+    estado.textContent = "Buscando informe en curso...";
+    try {
+      const { data: borrador, error } = await client.from("informes").select("id, tipo, distribuidor, actualizado_en").eq("usuario_id", session.user.id).eq("estado", "borrador").maybeSingle();
+      if (error) throw error;
+      borradorDisponible = borrador || null;
+      if (borradorDisponible) {
+        btnContinuar.disabled = false;
+        const tipoTexto = { inventario:"Inventario / Balance", devolucion:"Devolución", recepcion:"Recepción de carga" }[borradorDisponible.tipo] || "Informe";
+        estado.textContent = `${tipoTexto} · ${borradorDisponible.distribuidor || "Sin distribuidor"}`;
+      } else {
+        estado.textContent = "No tienes informes en curso";
+      }
+    } catch (err) {
+      console.error("No se pudo comprobar el informe en curso:", err);
+      estado.textContent = "No fue posible comprobar el informe en curso";
     }
-  }
-
-  if (volverBtn) {
-    volverBtn.addEventListener("click", volverAlInicio);
-  }
-
-  function limpiarFormularioParaInformeNuevo() {
-    // Desvincular primero el borrador anterior para que el observador
-    // no pueda volver a sincronizar las filas que vamos a quitar.
-    informeEnCursoId = null;
-    window.zeroStockInformeEnCursoId = null;
-
-    const tbody = document.getElementById("tbody");
-    if (tbody) tbody.innerHTML = "";
-
-    const tipoEl = document.getElementById("tipo-informe");
-    if (tipoEl) tipoEl.value = "0";
-
-    const distribuidorEl = document.getElementById("distribuidor");
-    if (distribuidorEl) distribuidorEl.selectedIndex = 0;
-
-    const formularioCompleto = document.getElementById("formulario-completo");
-    if (formularioCompleto) formularioCompleto.style.display = "none";
-
-    const campos = ["codigo", "nombre", "cantidad", "defecto"];
-    campos.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (el.tagName === "SELECT") el.selectedIndex = 0;
-      else el.value = "";
-    });
-
-    document.querySelectorAll(".valor-talla").forEach(el => {
-      el.value = 0;
-    });
-
-    const estadoBueno = document.getElementById("estado-bueno");
-    if (estadoBueno) estadoBueno.checked = true;
-
-    const total = document.getElementById("total");
-    if (total) total.textContent = "total item: 0";
   }
 
 
@@ -703,23 +738,46 @@
 
 
       // =========================
-      // CREAR INFORME
+      // FINALIZAR INFORME EN CURSO
+      // Si existe un borrador, convertimos ESE MISMO informe
+      // en finalizado. Solo creamos uno nuevo si no hay borrador.
       // =========================
 
-      const {
-        data: informe,
-        error: errorInforme
-      } = await client
-        .from("informes")
-        .insert({
-          usuario_id: session.user.id,
-          tipo: tipo,
-          estado: "finalizado",
-          distribuidor: nombreDistribuidor,
-          finalizado_en: ahora
-        })
-        .select("id")
-        .single();
+      let informe;
+      let errorInforme;
+
+      if (informeEnCursoId) {
+        const resultado = await client
+          .from("informes")
+          .update({
+            tipo: tipo,
+            estado: "finalizado",
+            distribuidor: nombreDistribuidor,
+            finalizado_en: ahora
+          })
+          .eq("id", informeEnCursoId)
+          .eq("usuario_id", session.user.id)
+          .select("id")
+          .single();
+
+        informe = resultado.data;
+        errorInforme = resultado.error;
+      } else {
+        const resultado = await client
+          .from("informes")
+          .insert({
+            usuario_id: session.user.id,
+            tipo: tipo,
+            estado: "finalizado",
+            distribuidor: nombreDistribuidor,
+            finalizado_en: ahora
+          })
+          .select("id")
+          .single();
+
+        informe = resultado.data;
+        errorInforme = resultado.error;
+      }
 
 
       if (errorInforme) {
@@ -836,6 +894,10 @@
         "Informe guardado correctamente en Supabase:",
         informe.id
       );
+
+      // El borrador ya quedó finalizado; liberar el informe en curso.
+      informeEnCursoId = null;
+      window.zeroStockInformeEnCursoId = null;
 
 
     } catch (err) {
