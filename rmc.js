@@ -2097,12 +2097,13 @@ function refreshTallaNumbers() {
 // --- ORDENAR LISTA DE DISTRIBUIDORES ALFABÉTICAMENTE ---
 document.addEventListener("DOMContentLoaded", function() {
   const select = document.getElementById("distribuidor");
-  if (!select) return; // seguridad por si no existe
+  if (!select) return;
+  const valorActual = select.value;
   const opciones = Array.from(select.querySelectorAll("option:not([value=''])"));
   opciones.sort((a, b) => a.text.localeCompare(b.text, 'es', { sensitivity: 'base' }));
   select.innerHTML = '<option value="">Seleccione un distribuidor</option>';
   opciones.forEach(op => select.appendChild(op));
-  select.value = ""; // Fuerza que quede sin selección al terminar de ordenar
+  select.value = valorActual;
 });
 
 
