@@ -1757,14 +1757,19 @@ for (let i = 1; i <= totalPages; i++) {
   pdf.text(footerText, x, footerY);
 }
 
-    }).get('pdf').then(function (pdf) {
-      // Guardar en memoria exactamente el mismo PDF que se va a descargar.
-      // auth.js usa este Blob para subir el PDF finalizado a Supabase Storage.
-      window.zeroStockUltimoPdfBlob = pdf.output('blob');
-      window.zeroStockUltimoPdfNombre = opt.filename;
     }).save().then(function(){
       // Restaurar
       ocultarColumna('', 'none');
+
+      // Avisar a ZeroStock que el PDF terminó de generarse y descargarse.
+      // auth.js escucha este evento para finalizar el informe y cerrar el borrador.
+      window.dispatchEvent(new CustomEvent('zerostock:pdf-generado', {
+        detail: {
+          filename: buildPdfFilename(),
+          tipo: tipoInforme ? String(tipoInforme.value || '') : '',
+          distribuidor: distribuidor ? String(distribuidor.value || '') : ''
+        }
+      }));
     }).finally(function(){
       // Limpieza de temporal
       if (contenedorTemporal && contenedorTemporal.parentNode) {
