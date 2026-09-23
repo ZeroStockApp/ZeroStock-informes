@@ -33,6 +33,8 @@
 #zs-login-error { min-height:20px; margin:14px 0 0; color:#b91c1c; text-align:center; font-size:13px; }
 #zs-sesion { display:none; align-items:center; justify-content:flex-end; gap:10px; max-width:980px; margin:12px auto 0; padding:0 16px; box-sizing:border-box; font-family:Arial,sans-serif; font-size:13px; color:#4b5563; }
 #zs-logout { border:1px solid #d1d5db; background:#fff; border-radius:7px; padding:7px 10px; cursor:pointer; color:#374151; }
+#zs-volver-inicio { display:none; max-width:800px; margin:10px auto 0; padding:0 16px; box-sizing:border-box; font-family:Arial,sans-serif; }
+#zs-volver-inicio button { border:0; background:transparent; color:#ad1457; font-weight:700; cursor:pointer; padding:8px 0; font-size:14px; }
 @media (max-width:520px) { .zs-login-card { padding:28px 22px; } }
 </style>
 </head>
@@ -60,6 +62,7 @@
   <span id="zs-usuario"></span>
   <button id="zs-logout" type="button">Cerrar sesión</button>
 </div>
+<div id="zs-volver-inicio"><button id="zs-volver-btn" type="button">← Volver al inicio</button></div>
 <div id="contenedor" style="display:none;">
 <div id="principal">
 <div id="error"></div>
