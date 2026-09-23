@@ -1331,9 +1331,14 @@
 
   if (botonPdf) {
 
-    botonPdf.addEventListener(
-      "click",
-      guardarInformeFinalizado
+    // No finalizamos directamente con el click: generar_pdf.js debe crear
+    // primero el Blob. El evento zerostock:pdf-listo se dispara justo
+    // después de que ese Blob queda disponible.
+    window.addEventListener(
+      "zerostock:pdf-listo",
+      () => {
+        guardarInformeFinalizado();
+      }
     );
 
   }
