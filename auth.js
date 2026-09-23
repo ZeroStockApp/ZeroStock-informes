@@ -11,8 +11,12 @@
   const userLabel = document.getElementById("zs-usuario");
   const logout = document.getElementById("zs-logout");
   const app = document.getElementById("contenedor");
+  const volverInicio = document.getElementById("zs-volver-inicio");
+  const volverBtn = document.getElementById("zs-volver-btn");
   let panelInicio = null;
   let borradorDisponible = null;
+  let vistaActual = "inicio";
+  let sesionInicializada = false;
 
   if (
     !window.supabase ||
@@ -36,6 +40,7 @@
     login.style.display = "flex";
     app.style.display = "none";
     if (panelInicio) panelInicio.style.display = "none";
+    if (volverInicio) volverInicio.style.display = "none";
     sessionBar.style.display = "none";
     userLabel.textContent = "";
     window.zeroStockSession = null;
@@ -115,8 +120,16 @@
 
   client.auth.onAuthStateChange((_event, session) => {
     if (session) {
-      showApp(session);
+      window.zeroStockSession = session;
+
+      // Una renovación interna de la sesión no debe cambiar la vista actual.
+      if (!sesionInicializada) {
+        sesionInicializada = true;
+        showApp(session);
+      }
     } else {
+      sesionInicializada = false;
+      vistaActual = "inicio";
       showLogin();
     }
   });
@@ -125,11 +138,77 @@
     const { data, error } = await client.auth.getSession();
 
     if (!error && data.session) {
+      sesionInicializada = true;
       await showApp(data.session);
     } else {
       showLogin();
     }
   })();
+
+
+  // =========================================================
+  // CONTROL DE VISTA DEL FORMULARIO
+  // =========================================================
+
+  function abrirFormularioZeroStock() {
+    vistaActual = "formulario";
+    if (panelInicio) panelInicio.style.display = "none";
+    app.style.display = "block";
+    if (volverInicio) volverInicio.style.display = "block";
+  }
+
+  async function volverAlInicioZeroStock() {
+    // Solo cambia de pantalla. El borrador permanece guardado.
+    vistaActual = "inicio";
+    app.style.display = "none";
+    if (volverInicio) volverInicio.style.display = "none";
+    await prepararInicioZeroStock();
+  }
+
+  if (volverBtn) {
+    volverBtn.addEventListener("click", volverAlInicioZeroStock);
+  }
+
+  function limpiarFormularioParaNuevoInforme() {
+    // Desvinculamos primero el borrador eliminado para impedir que
+    // el observador vuelva a sincronizar las filas antiguas.
+    informeEnCursoId = null;
+    window.zeroStockInformeEnCursoId = null;
+
+    const tbody = document.getElementById("tbody");
+    if (tbody) tbody.innerHTML = "";
+
+    const tipoEl = document.getElementById("tipo-informe");
+    if (tipoEl) {
+      tipoEl.value = "0";
+      tipoEl.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    const distribuidorEl = document.getElementById("distribuidor");
+    if (distribuidorEl) {
+      distribuidorEl.selectedIndex = 0;
+      distribuidorEl.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    const codigo = document.getElementById("codigo");
+    const nombre = document.getElementById("nombre");
+    const cantidad = document.getElementById("cantidad");
+    const defecto = document.getElementById("defecto");
+
+    if (codigo) codigo.value = "";
+    if (nombre) nombre.value = "";
+    if (cantidad) cantidad.value = "";
+    if (defecto) defecto.selectedIndex = 0;
+
+    document.querySelectorAll(".valor-talla").forEach(el => {
+      el.value = 0;
+    });
+
+    const estadoBueno = document.getElementById("estado-bueno");
+    if (estadoBueno) estadoBueno.checked = true;
+
+    if (typeof sumarItems === "function") sumarItems();
+  }
 
 
   // =========================================================
@@ -191,8 +270,7 @@
           // La relación informe_productos -> informes usa ON DELETE CASCADE,
           // por lo que Supabase elimina automáticamente los productos del borrador.
           borradorDisponible = null;
-          informeEnCursoId = null;
-          window.zeroStockInformeEnCursoId = null;
+          limpiarFormularioParaNuevoInforme();
 
         } catch (err) {
           console.error("No se pudo descartar el informe en curso:", err);
@@ -201,14 +279,12 @@
         }
       }
 
-      panelInicio.style.display = "none";
-      app.style.display = "block";
+      abrirFormularioZeroStock();
     });
 
     panelInicio.querySelector("#zs-continuar-informe").addEventListener("click", async () => {
       if (!borradorDisponible?.id) return;
-      panelInicio.style.display = "none";
-      app.style.display = "block";
+      abrirFormularioZeroStock();
       await recuperarBorradorExistente();
     });
     return panelInicio;
@@ -221,7 +297,9 @@
     const saludo = panel.querySelector("#zs-inicio-saludo");
     const btnContinuar = panel.querySelector("#zs-continuar-informe");
     const estado = panel.querySelector("#zs-borrador-estado");
+    vistaActual = "inicio";
     app.style.display = "none";
+    if (volverInicio) volverInicio.style.display = "none";
     panel.style.display = "block";
     saludo.textContent = window.zeroStockPerfil?.nombre ? `Hola, ${window.zeroStockPerfil.nombre}` : "";
     borradorDisponible = null;
