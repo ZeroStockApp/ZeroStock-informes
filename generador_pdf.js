@@ -73,6 +73,10 @@ function generarPDF() {
 
   // Conservamos la descarga local que ya funcionaba.
   doc.save(nombreArchivo);
+
+  // Avisamos a auth.js SOLO cuando el PDF ya está completamente preparado.
+  // Así el informe no intenta finalizarse antes de que exista el Blob.
+  window.dispatchEvent(new CustomEvent("zerostock:pdf-generado"));
 }
 
 // Función auxiliar para tomar el total de productos
