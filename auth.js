@@ -202,6 +202,9 @@
       .zs-detalle-tabla { width:100%; border-collapse:collapse; font-size:13px; }
       .zs-detalle-tabla th, .zs-detalle-tabla td { padding:10px 9px; border-bottom:1px solid #e5e7eb; text-align:left; vertical-align:top; }
       .zs-detalle-tabla th { color:#ad1457; background:#fdf2f6; }
+      .zs-pdf-acciones { margin:18px 0 0; text-align:right; }
+      .zs-pdf-btn { border:0; border-radius:8px; padding:10px 15px; background:#ad1457; color:#fff; font-weight:700; cursor:pointer; }
+      .zs-pdf-btn:disabled { opacity:.55; cursor:default; }
       @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } #zs-historicos { margin:12px auto 24px; padding:24px 18px; } }
     `;
     document.head.appendChild(estilos);
@@ -439,6 +442,46 @@
     }
   }
 
+  async function descargarPdfHistorico(informeId, boton) {
+    const session = window.zeroStockSession;
+    if (!session?.user?.id || !informeId) return;
+
+    const textoOriginal = boton?.textContent || "Descargar PDF";
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = "Preparando PDF...";
+    }
+
+    try {
+      const rutaPdf = `${session.user.id}/${informeId}.pdf`;
+
+      const { data, error } = await client.storage
+        .from("informes-pdf")
+        .download(rutaPdf);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = `Informe_${informeId}.pdf`;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("No se pudo descargar el PDF histórico:", err);
+      alert("Este informe no tiene un PDF guardado disponible.");
+    } finally {
+      if (boton) {
+        boton.disabled = false;
+        boton.textContent = textoOriginal;
+      }
+    }
+  }
+
+
   async function mostrarDetalleHistorico(informe) {
     const session = window.zeroStockSession;
     if (!session?.user?.id || !informe?.id) return;
@@ -504,9 +547,16 @@
             <tbody>${filas || '<tr><td colspan="4">Este informe no tiene productos.</td></tr>'}</tbody>
           </table>
         </div>
+        <div class="zs-pdf-acciones">
+          <button class="zs-pdf-btn" id="zs-descargar-pdf" type="button">Descargar PDF</button>
+        </div>
       `;
       panel.querySelector("#zs-historicos-lista-volver")
         .addEventListener("click", mostrarHistoricos);
+      panel.querySelector("#zs-descargar-pdf")
+        .addEventListener("click", (event) =>
+          descargarPdfHistorico(informe.id, event.currentTarget)
+        );
     } catch (err) {
       console.error("No se pudo abrir el informe finalizado:", err);
       panel.innerHTML = `
@@ -985,6 +1035,31 @@
   }
 
 
+  async function guardarPdfFinalizado(informeId) {
+    const session = window.zeroStockSession;
+    const pdfBlob = window.zeroStockUltimoPdfBlob;
+
+    if (!session?.user?.id || !informeId || !pdfBlob) {
+      console.warn("No hay PDF disponible para guardar en Storage.");
+      return false;
+    }
+
+    const rutaPdf = `${session.user.id}/${informeId}.pdf`;
+
+    const { error } = await client.storage
+      .from("informes-pdf")
+      .upload(rutaPdf, pdfBlob, {
+        contentType: "application/pdf",
+        upsert: true
+      });
+
+    if (error) throw error;
+
+    console.log("PDF guardado correctamente en Storage:", rutaPdf);
+    return true;
+  }
+
+
   async function guardarInformeFinalizado() {
 
     if (guardandoInforme) return;
@@ -1212,6 +1287,12 @@
         "Informe guardado correctamente en Supabase:",
         informe.id
       );
+
+      // Guardar en Storage el mismo PDF generado por el formulario.
+      await guardarPdfFinalizado(informe.id);
+
+      window.zeroStockUltimoPdfBlob = null;
+      window.zeroStockUltimoPdfNombre = null;
 
       // El borrador ya quedó finalizado; liberar el informe en curso.
       informeEnCursoId = null;
