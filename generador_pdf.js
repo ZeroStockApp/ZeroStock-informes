@@ -71,6 +71,14 @@ function generarPDF() {
   window.zeroStockUltimoPdfBlob = doc.output("blob");
   window.zeroStockUltimoPdfNombre = nombreArchivo;
 
+  // Avisamos a auth.js que el PDF ya existe en memoria.
+  window.dispatchEvent(new CustomEvent("zerostock:pdf-listo", {
+    detail: {
+      blob: window.zeroStockUltimoPdfBlob,
+      nombre: nombreArchivo
+    }
+  }));
+
   // Conservamos la descarga local que ya funcionaba.
   doc.save(nombreArchivo);
 }
