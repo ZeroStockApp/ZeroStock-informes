@@ -1192,36 +1192,35 @@ document.addEventListener('DOMContentLoaded', function () {
   const tipoInforme = document.getElementById('tipo-informe');
   const formularioCompleto = document.getElementById('formulario-completo');
 
-  // Oculta todo el bloque al cargar
-  formularioCompleto.style.display = 'none';
+  // El formulario permanece visible: el tipo de informe se elige dentro del propio formulario.
+  formularioCompleto.style.display = 'block';
 
-  // Muestra el formulario si el tipo de informe es válido
+  // Actualiza los campos específicos cuando cambia el tipo de informe.
   tipoInforme.addEventListener('change', function () {
     if (this.value !== "0") {
-      formularioCompleto.style.display = "block";
-      actualizarCamposPorTipo(); // Ejecuta la lógica que ya tienes
+      actualizarCamposPorTipo();
 
-        limpiarDatos();
-        limpiarTallas();
-        tbody.innerHTML = '';
-        m2Tbody.innerHTML = '';
-        sumarItems();
-
-
-const mensajeBienvenida = document.getElementById("mensaje-bienvenida");
-if (mensajeBienvenida) {
-  mensajeBienvenida.style.display = "none";
-}
-
-document.body.classList.remove("bienvenida-activa");
-document.body.classList.add("contenido-activo");
-
+      limpiarDatos();
+      limpiarTallas();
+      tbody.innerHTML = '';
+      m2Tbody.innerHTML = '';
+      sumarItems();
     } else {
-      formularioCompleto.style.display = "none";
+      // Si vuelve a "Seleccione", mantenemos visible el formulario
+      // y dejamos ocultos solamente los campos que dependen del tipo.
+      actualizarCamposPorTipo();
     }
-  });activarEventosTallaInputs();
+  });
 
-  document.body.classList.add("bienvenida-activa");
+  activarEventosTallaInputs();
+
+  const mensajeBienvenida = document.getElementById("mensaje-bienvenida");
+  if (mensajeBienvenida) {
+    mensajeBienvenida.style.display = "none";
+  }
+
+  document.body.classList.remove("bienvenida-activa");
+  document.body.classList.add("contenido-activo");
 });
 
 
