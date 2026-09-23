@@ -167,8 +167,40 @@
       </div>`;
     sessionBar.insertAdjacentElement("afterend", panelInicio);
 
-    panelInicio.querySelector("#zs-crear-informe").addEventListener("click", () => {
-      if (borradorDisponible?.id) { alert("Ya tienes un informe en curso. Continúalo y finalízalo antes de crear uno nuevo."); return; }
+    panelInicio.querySelector("#zs-crear-informe").addEventListener("click", async () => {
+      if (borradorDisponible?.id) {
+        const crearNuevo = window.confirm(
+          "Ya tienes un informe en curso.\n\n¿Seguro que quieres descartarlo y crear un informe nuevo?"
+        );
+
+        if (!crearNuevo) return;
+
+        const session = window.zeroStockSession;
+        if (!session?.user?.id) return;
+
+        try {
+          const { error } = await client
+            .from("informes")
+            .delete()
+            .eq("id", borradorDisponible.id)
+            .eq("usuario_id", session.user.id)
+            .eq("estado", "borrador");
+
+          if (error) throw error;
+
+          // La relación informe_productos -> informes usa ON DELETE CASCADE,
+          // por lo que Supabase elimina automáticamente los productos del borrador.
+          borradorDisponible = null;
+          informeEnCursoId = null;
+          window.zeroStockInformeEnCursoId = null;
+
+        } catch (err) {
+          console.error("No se pudo descartar el informe en curso:", err);
+          alert("No fue posible descartar el informe en curso. Inténtalo nuevamente.");
+          return;
+        }
+      }
+
       panelInicio.style.display = "none";
       app.style.display = "block";
     });
