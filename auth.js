@@ -91,8 +91,11 @@
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .toLowerCase().trim();
       const objetivo = normalizar(nombrePerfil);
+      // La cuenta operativa "Stock" corresponde al distribuidor histórico "Stock Rmc".
+      // Mantenemos el nombre del selector porque otras partes del formulario/PDF lo usan.
+      const objetivoDistribuidor = objetivo === "stock" ? "stock rmc" : objetivo;
       const opcion = Array.from(distribuidorEl.options).find(opt =>
-        normalizar(opt.textContent) === objetivo
+        normalizar(opt.textContent) === objetivoDistribuidor
       );
       if (opcion) distribuidorEl.value = opcion.value;
     }
