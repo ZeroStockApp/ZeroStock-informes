@@ -189,7 +189,20 @@
       .zs-inicio-opcion strong { display:block; margin-bottom:9px; color:#ad1457; font-size:17px; }
       .zs-inicio-opcion span { color:#6b7280; font-size:13px; line-height:1.45; }
       .zs-inicio-estado { display:block; margin-top:10px; color:#374151!important; font-weight:700; }
-      @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } }
+      #zs-historicos { max-width:800px; margin:18px auto 30px; padding:30px 32px; box-sizing:border-box; background:#fff; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.10); font-family:Arial,sans-serif; }
+      #zs-historicos h2 { margin:0 0 22px; color:#2c3e50; font-family:'Playfair Display',serif; font-size:27px; text-align:center; }
+      .zs-historicos-volver { margin-bottom:18px; border:0; background:transparent; color:#ad1457; font-weight:700; cursor:pointer; padding:0; }
+      .zs-historico-card { width:100%; box-sizing:border-box; margin:0 0 12px; padding:17px 18px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; text-align:left; cursor:pointer; }
+      .zs-historico-card:hover { border-color:#f8bbd0; box-shadow:0 5px 14px rgba(0,0,0,.06); }
+      .zs-historico-card strong { display:block; color:#ad1457; font-size:16px; margin-bottom:6px; }
+      .zs-historico-card span { display:block; color:#6b7280; font-size:13px; line-height:1.45; }
+      .zs-historicos-mensaje { text-align:center; color:#6b7280; padding:24px 10px; }
+      .zs-detalle-meta { margin:0 0 20px; padding:14px 16px; background:#f8f9fa; border-radius:9px; color:#4b5563; font-size:14px; line-height:1.6; }
+      .zs-detalle-tabla-wrap { overflow-x:auto; }
+      .zs-detalle-tabla { width:100%; border-collapse:collapse; font-size:13px; }
+      .zs-detalle-tabla th, .zs-detalle-tabla td { padding:10px 9px; border-bottom:1px solid #e5e7eb; text-align:left; vertical-align:top; }
+      .zs-detalle-tabla th { color:#ad1457; background:#fdf2f6; }
+      @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } #zs-historicos { margin:12px auto 24px; padding:24px 18px; } }
     `;
     document.head.appendChild(estilos);
 
@@ -201,7 +214,7 @@
       <div class="zs-inicio-opciones">
         <button class="zs-inicio-opcion" id="zs-crear-informe" type="button"><strong>Crear informe</strong><span>Empieza un informe nuevo.</span></button>
         <button class="zs-inicio-opcion" id="zs-continuar-informe" type="button" disabled><strong>Informe en curso</strong><span>Continúa el informe que dejaste pendiente.</span><span class="zs-inicio-estado" id="zs-borrador-estado">Buscando informe en curso...</span></button>
-        <button class="zs-inicio-opcion" id="zs-ver-informes" type="button" disabled><strong>Ver informes</strong><span>Consulta tus últimos informes finalizados.</span><span class="zs-inicio-estado">Próximamente</span></button>
+        <button class="zs-inicio-opcion" id="zs-ver-informes" type="button"><strong>Ver informes</strong><span>Consulta tus últimos 4 informes finalizados.</span></button>
       </div>`;
     sessionBar.insertAdjacentElement("afterend", panelInicio);
 
@@ -291,7 +304,219 @@
       if (volverInicio) volverInicio.style.display = "block";
       await recuperarBorradorExistente();
     });
+
+    panelInicio.querySelector("#zs-ver-informes").addEventListener("click", async () => {
+      await mostrarHistoricos();
+    });
+
     return panelInicio;
+  }
+
+  function escaparHtml(valor) {
+    return String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function textoTipoInforme(tipo) {
+    return {
+      inventario: "Inventario / Balance",
+      devolucion: "Devolución",
+      recepcion: "Recepción de carga"
+    }[tipo] || "Informe";
+  }
+
+  function formatearFechaInforme(fechaIso) {
+    if (!fechaIso) return "Sin fecha";
+    const fecha = new Date(fechaIso);
+    if (Number.isNaN(fecha.getTime())) return "Sin fecha";
+    return new Intl.DateTimeFormat("es-CL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(fecha);
+  }
+
+  function obtenerPanelHistoricos() {
+    let panel = document.getElementById("zs-historicos");
+    if (panel) return panel;
+
+    panel = document.createElement("section");
+    panel.id = "zs-historicos";
+    panel.style.display = "none";
+    sessionBar.insertAdjacentElement("afterend", panel);
+    return panel;
+  }
+
+  function volverDesdeHistoricosAlInicio() {
+    const panel = obtenerPanelHistoricos();
+    panel.style.display = "none";
+    app.style.display = "none";
+    if (panelInicio) panelInicio.style.display = "block";
+    const volverInicio = document.getElementById("zs-volver-inicio");
+    if (volverInicio) volverInicio.style.display = "none";
+    prepararInicioZeroStock().catch(err => {
+      console.error("No se pudo actualizar el menú principal:", err);
+    });
+  }
+
+  async function mostrarHistoricos() {
+    const session = window.zeroStockSession;
+    if (!session?.user?.id) return;
+
+    const panel = obtenerPanelHistoricos();
+    panelInicio.style.display = "none";
+    app.style.display = "none";
+    const volverInicio = document.getElementById("zs-volver-inicio");
+    if (volverInicio) volverInicio.style.display = "none";
+
+    panel.style.display = "block";
+    panel.innerHTML = `
+      <button class="zs-historicos-volver" id="zs-historicos-inicio" type="button">← Volver al inicio</button>
+      <h2>Mis informes</h2>
+      <div class="zs-historicos-mensaje">Cargando informes...</div>
+    `;
+    panel.querySelector("#zs-historicos-inicio")
+      .addEventListener("click", volverDesdeHistoricosAlInicio);
+
+    try {
+      const { data: informes, error } = await client
+        .from("informes")
+        .select("id, tipo, distribuidor, finalizado_en")
+        .eq("usuario_id", session.user.id)
+        .eq("estado", "finalizado")
+        .order("finalizado_en", { ascending: false })
+        .limit(4);
+
+      if (error) throw error;
+
+      if (!informes || informes.length === 0) {
+        panel.innerHTML = `
+          <button class="zs-historicos-volver" id="zs-historicos-inicio" type="button">← Volver al inicio</button>
+          <h2>Mis informes</h2>
+          <div class="zs-historicos-mensaje">Todavía no tienes informes finalizados.</div>
+        `;
+        panel.querySelector("#zs-historicos-inicio")
+          .addEventListener("click", volverDesdeHistoricosAlInicio);
+        return;
+      }
+
+      panel.innerHTML = `
+        <button class="zs-historicos-volver" id="zs-historicos-inicio" type="button">← Volver al inicio</button>
+        <h2>Mis informes</h2>
+        <div id="zs-historicos-lista"></div>
+      `;
+      panel.querySelector("#zs-historicos-inicio")
+        .addEventListener("click", volverDesdeHistoricosAlInicio);
+
+      const lista = panel.querySelector("#zs-historicos-lista");
+      informes.forEach(informe => {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "zs-historico-card";
+        boton.innerHTML = `
+          <strong>${escaparHtml(textoTipoInforme(informe.tipo))}</strong>
+          <span>${escaparHtml(formatearFechaInforme(informe.finalizado_en))}</span>
+          <span>${escaparHtml(informe.distribuidor || "")}</span>
+        `;
+        boton.addEventListener("click", () => mostrarDetalleHistorico(informe));
+        lista.appendChild(boton);
+      });
+    } catch (err) {
+      console.error("No se pudieron cargar los informes finalizados:", err);
+      panel.innerHTML = `
+        <button class="zs-historicos-volver" id="zs-historicos-inicio" type="button">← Volver al inicio</button>
+        <h2>Mis informes</h2>
+        <div class="zs-historicos-mensaje">No fue posible cargar tus informes. Inténtalo nuevamente.</div>
+      `;
+      panel.querySelector("#zs-historicos-inicio")
+        .addEventListener("click", volverDesdeHistoricosAlInicio);
+    }
+  }
+
+  async function mostrarDetalleHistorico(informe) {
+    const session = window.zeroStockSession;
+    if (!session?.user?.id || !informe?.id) return;
+
+    const panel = obtenerPanelHistoricos();
+    panel.innerHTML = `
+      <button class="zs-historicos-volver" id="zs-historicos-lista-volver" type="button">← Volver a mis informes</button>
+      <h2>${escaparHtml(textoTipoInforme(informe.tipo))}</h2>
+      <div class="zs-historicos-mensaje">Cargando productos...</div>
+    `;
+    panel.querySelector("#zs-historicos-lista-volver")
+      .addEventListener("click", mostrarHistoricos);
+
+    try {
+      // Primero verificamos que el informe siga perteneciendo al usuario conectado.
+      const { data: informePropio, error: errorInforme } = await client
+        .from("informes")
+        .select("id")
+        .eq("id", informe.id)
+        .eq("usuario_id", session.user.id)
+        .eq("estado", "finalizado")
+        .single();
+
+      if (errorInforme || !informePropio) throw errorInforme || new Error("Informe no disponible");
+
+      const { data: productos, error } = await client
+        .from("informe_productos")
+        .select("codigo, nombre, cantidad, estado_producto, tallas, orden")
+        .eq("informe_id", informe.id)
+        .order("orden", { ascending: true });
+
+      if (error) throw error;
+
+      const filas = (productos || []).map(producto => {
+        const tallas = textoTallasDesdeJson(producto.tallas);
+        const detalle = [
+          producto.estado_producto || "",
+          tallas || ""
+        ].filter(Boolean).join(" · ");
+
+        return `
+          <tr>
+            <td>${escaparHtml(producto.codigo || "")}</td>
+            <td>${escaparHtml(producto.nombre || "")}</td>
+            <td>${escaparHtml(producto.cantidad ?? 0)}</td>
+            <td>${escaparHtml(detalle || "—")}</td>
+          </tr>
+        `;
+      }).join("");
+
+      panel.innerHTML = `
+        <button class="zs-historicos-volver" id="zs-historicos-lista-volver" type="button">← Volver a mis informes</button>
+        <h2>${escaparHtml(textoTipoInforme(informe.tipo))}</h2>
+        <div class="zs-detalle-meta">
+          <strong>Fecha:</strong> ${escaparHtml(formatearFechaInforme(informe.finalizado_en))}<br>
+          <strong>Distribuidor:</strong> ${escaparHtml(informe.distribuidor || "—")}
+        </div>
+        <div class="zs-detalle-tabla-wrap">
+          <table class="zs-detalle-tabla">
+            <thead>
+              <tr><th>Código</th><th>Producto</th><th>Cantidad</th><th>Detalle</th></tr>
+            </thead>
+            <tbody>${filas || '<tr><td colspan="4">Este informe no tiene productos.</td></tr>'}</tbody>
+          </table>
+        </div>
+      `;
+      panel.querySelector("#zs-historicos-lista-volver")
+        .addEventListener("click", mostrarHistoricos);
+    } catch (err) {
+      console.error("No se pudo abrir el informe finalizado:", err);
+      panel.innerHTML = `
+        <button class="zs-historicos-volver" id="zs-historicos-lista-volver" type="button">← Volver a mis informes</button>
+        <h2>Informe</h2>
+        <div class="zs-historicos-mensaje">No fue posible abrir este informe.</div>
+      `;
+      panel.querySelector("#zs-historicos-lista-volver")
+        .addEventListener("click", mostrarHistoricos);
+    }
   }
 
   async function prepararInicioZeroStock() {
