@@ -1128,7 +1128,18 @@
       let informe;
       let errorInforme;
 
-      if (informeEnCursoId) {
+      // La base de datos es la fuente de verdad. No confiamos solamente en
+      // informeEnCursoId porque puede quedar desactualizado al cambiar de informe.
+      const { data: borradorActual, error: errorBuscarBorrador } = await client
+        .from("informes")
+        .select("id")
+        .eq("usuario_id", session.user.id)
+        .eq("estado", "borrador")
+        .maybeSingle();
+
+      if (errorBuscarBorrador) throw errorBuscarBorrador;
+
+      if (borradorActual?.id) {
         const resultado = await client
           .from("informes")
           .update({
@@ -1137,8 +1148,9 @@
             distribuidor: nombreDistribuidor,
             finalizado_en: ahora
           })
-          .eq("id", informeEnCursoId)
+          .eq("id", borradorActual.id)
           .eq("usuario_id", session.user.id)
+          .eq("estado", "borrador")
           .select("id")
           .single();
 
@@ -1288,14 +1300,17 @@
         informe.id
       );
 
-      // Guardar en Storage el mismo PDF generado por el formulario.
+      // Guardar en Storage el mismo PDF que ya fue generado.
+      // Este punto solo se ejecuta después del evento zerostock:pdf-generado,
+      // por lo que el Blob ya existe y no hay carrera entre ambos procesos.
       await guardarPdfFinalizado(informe.id);
 
       window.zeroStockUltimoPdfBlob = null;
       window.zeroStockUltimoPdfNombre = null;
 
-      // El borrador ya quedó finalizado; liberar el informe en curso.
+      // El borrador ya quedó finalizado; limpiar TODO el estado local asociado.
       informeEnCursoId = null;
+      borradorDisponible = null;
       window.zeroStockInformeEnCursoId = null;
 
 
@@ -1319,23 +1334,14 @@
 
 
   // =========================================================
-  // AL CREAR EL PDF TAMBIÉN GUARDAMOS EL INFORME
+  // AL TERMINAR DE GENERAR EL PDF, GUARDAMOS EL INFORME.
+  // No escuchamos directamente el clic: esperamos a que generador_pdf.js
+  // confirme que el Blob del PDF ya está listo.
   // =========================================================
 
-  const botonPdf =
-    document.getElementById("boton-pdf") ||
-    document.getElementById(
-      "boton-crear-pdf"
-    );
-
-
-  if (botonPdf) {
-
-    botonPdf.addEventListener(
-      "click",
-      guardarInformeFinalizado
-    );
-
-  }
+  window.addEventListener(
+    "zerostock:pdf-generado",
+    guardarInformeFinalizado
+  );
 
 })();
