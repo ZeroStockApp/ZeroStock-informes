@@ -205,20 +205,19 @@
     // Regresa al menú principal sin borrar ni modificar el borrador.
     let volverInicio = document.getElementById("zs-volver-inicio");
     if (!volverInicio) {
-      volverInicio = document.createElement("button");
+      volverInicio = document.createElement("div");
       volverInicio.id = "zs-volver-inicio";
-      volverInicio.type = "button";
-      volverInicio.textContent = "← Volver al inicio";
-      volverInicio.style.cssText = "display:none;margin:10px auto 8px;max-width:800px;width:100%;padding:0 14px;border:0;background:transparent;color:#c2185b;text-align:left;cursor:pointer;font-weight:600;";
-      panelInicio.insertAdjacentElement("afterend", volverInicio);
+      volverInicio.innerHTML = '<button id="zs-volver-btn" type="button">← Volver al inicio</button>';
+      sessionBar.insertAdjacentElement("afterend", volverInicio);
+    }
 
-      volverInicio.addEventListener("click", () => {
-        // Cambio visual inmediato: no depende de ninguna consulta a Supabase.
+    const volverBtn = volverInicio.querySelector("#zs-volver-btn") || volverInicio;
+    if (!volverBtn.dataset.zsVolverConectado) {
+      volverBtn.dataset.zsVolverConectado = "1";
+      volverBtn.addEventListener("click", () => {
         app.style.display = "none";
         panelInicio.style.display = "block";
         volverInicio.style.display = "none";
-
-        // Después actualizamos el estado del borrador en el menú.
         prepararInicioZeroStock().catch(err => {
           console.error("No se pudo actualizar el menú principal:", err);
         });
