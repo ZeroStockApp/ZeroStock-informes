@@ -1760,6 +1760,16 @@ for (let i = 1; i <= totalPages; i++) {
     }).save().then(function(){
       // Restaurar
       ocultarColumna('', 'none');
+
+      // Avisar a ZeroStock que el PDF terminó de generarse y descargarse.
+      // auth.js escucha este evento para finalizar el informe y cerrar el borrador.
+      window.dispatchEvent(new CustomEvent('zerostock:pdf-generado', {
+        detail: {
+          filename: buildPdfFilename(),
+          tipo: tipoInforme ? String(tipoInforme.value || '') : '',
+          distribuidor: distribuidor ? String(distribuidor.value || '') : ''
+        }
+      }));
     }).finally(function(){
       // Limpieza de temporal
       if (contenedorTemporal && contenedorTemporal.parentNode) {
