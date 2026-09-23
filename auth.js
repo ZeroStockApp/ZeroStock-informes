@@ -254,6 +254,22 @@
           informeEnCursoId = null;
           window.zeroStockInformeEnCursoId = null;
 
+          // El borrador se eliminó de Supabase, pero sus filas pueden seguir
+          // visibles en el formulario si antes se había abierto "Informe en curso".
+          // Al crear uno nuevo, limpiamos únicamente el estado visual del informe.
+          const tbody = document.getElementById("tbody");
+          if (tbody) tbody.innerHTML = "";
+
+          const tipoEl = document.getElementById("tipo-informe");
+          if (tipoEl) {
+            tipoEl.value = "0";
+            tipoEl.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+
+          if (typeof sumarItems === "function") {
+            sumarItems();
+          }
+
         } catch (err) {
           console.error("No se pudo descartar el informe en curso:", err);
           alert("No fue posible descartar el informe en curso. Inténtalo nuevamente.");
