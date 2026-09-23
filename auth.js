@@ -182,6 +182,23 @@
       </div>`;
     sessionBar.insertAdjacentElement("afterend", panelInicio);
 
+    // Regresa al menú principal sin borrar ni modificar el borrador.
+    let volverInicio = document.getElementById("zs-volver-inicio");
+    if (!volverInicio) {
+      volverInicio = document.createElement("button");
+      volverInicio.id = "zs-volver-inicio";
+      volverInicio.type = "button";
+      volverInicio.textContent = "← Volver al inicio";
+      volverInicio.style.cssText = "display:none;margin:10px auto 8px;max-width:800px;width:100%;padding:0 14px;border:0;background:transparent;color:#c2185b;text-align:left;cursor:pointer;font-weight:600;";
+      panelInicio.insertAdjacentElement("afterend", volverInicio);
+
+      volverInicio.addEventListener("click", async () => {
+        app.style.display = "none";
+        volverInicio.style.display = "none";
+        await prepararInicioZeroStock();
+      });
+    }
+
     panelInicio.querySelector("#zs-crear-informe").addEventListener("click", async () => {
       if (borradorDisponible?.id) {
         const crearNuevo = window.confirm(
@@ -218,12 +235,16 @@
 
       panelInicio.style.display = "none";
       app.style.display = "block";
+      const volverInicio = document.getElementById("zs-volver-inicio");
+      if (volverInicio) volverInicio.style.display = "block";
     });
 
     panelInicio.querySelector("#zs-continuar-informe").addEventListener("click", async () => {
       if (!borradorDisponible?.id) return;
       panelInicio.style.display = "none";
       app.style.display = "block";
+      const volverInicio = document.getElementById("zs-volver-inicio");
+      if (volverInicio) volverInicio.style.display = "block";
       await recuperarBorradorExistente();
     });
     return panelInicio;
@@ -238,6 +259,8 @@
     const estado = panel.querySelector("#zs-borrador-estado");
     app.style.display = "none";
     panel.style.display = "block";
+    const volverInicio = document.getElementById("zs-volver-inicio");
+    if (volverInicio) volverInicio.style.display = "none";
     saludo.textContent = window.zeroStockPerfil?.nombre ? `Hola, ${window.zeroStockPerfil.nombre}` : "";
     borradorDisponible = null;
     btnContinuar.disabled = true;
