@@ -64,9 +64,15 @@ function generarPDF() {
   doc.setFontSize(10);
   doc.text("TOTAL PRODUCTOS: " + obtenerTotalProductos(), 250, pageHeight - 10, { align: "right" });
 
-  // Guardamos el PDF
+  // Preparamos el PDF para que auth.js pueda guardar exactamente
+  // el mismo archivo en Supabase Storage.
   const fecha = new Date().toLocaleDateString().replace(/\//g, '-');
-  doc.save("Informe_Stock_" + fecha + ".pdf");
+  const nombreArchivo = "Informe_Stock_" + fecha + ".pdf";
+  window.zeroStockUltimoPdfBlob = doc.output("blob");
+  window.zeroStockUltimoPdfNombre = nombreArchivo;
+
+  // Conservamos la descarga local que ya funcionaba.
+  doc.save(nombreArchivo);
 }
 
 // Función auxiliar para tomar el total de productos
