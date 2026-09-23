@@ -941,6 +941,17 @@
       // GUARDAR PRODUCTOS
       // =========================
 
+      // Los productos del borrador ya existen en informe_productos.
+      // Antes de guardar la versión final, los reemplazamos para evitar duplicados.
+      const { error: errorBorrarProductosFinales } = await client
+        .from("informe_productos")
+        .delete()
+        .eq("informe_id", informe.id);
+
+      if (errorBorrarProductosFinales) {
+        throw errorBorrarProductosFinales;
+      }
+
       const {
         error: errorProductos
       } = await client
