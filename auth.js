@@ -349,6 +349,14 @@
         }
       }
 
+      // Cada vez que se abre "Crear informe", debe comenzar sin un tipo
+      // seleccionado. Así no se arrastra el tipo del informe anterior.
+      const tipoNuevoEl = document.getElementById("tipo-informe");
+      if (tipoNuevoEl) {
+        tipoNuevoEl.value = "0";
+        tipoNuevoEl.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
       panelInicio.style.display = "none";
       app.style.display = "block";
       const volverInicio = document.getElementById("zs-volver-inicio");
