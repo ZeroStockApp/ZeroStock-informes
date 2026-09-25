@@ -1590,6 +1590,16 @@
       borradorDisponible = null;
       window.zeroStockInformeEnCursoId = null;
 
+      // El informe terminó correctamente: volver automáticamente al inicio.
+      // Esto ocurre solo después de guardar el PDF y limpiar el borrador.
+      const panelHistoricos = document.getElementById("zs-historicos");
+      if (panelHistoricos) panelHistoricos.style.display = "none";
+      app.style.display = "none";
+      if (panelInicio) panelInicio.style.display = "block";
+      const volverInicio = document.getElementById("zs-volver-inicio");
+      if (volverInicio) volverInicio.style.display = "none";
+      await prepararInicioZeroStock();
+
 
     } catch (err) {
 
