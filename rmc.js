@@ -1757,6 +1757,11 @@ for (let i = 1; i <= totalPages; i++) {
   pdf.text(footerText, x, footerY);
 }
 
+      // Conservar exactamente este mismo PDF para que auth.js lo suba a Supabase Storage.
+      // No altera la descarga local ni el flujo actual de finalización del informe.
+      window.zeroStockUltimoPdfBlob = pdf.output('blob');
+      window.zeroStockUltimoPdfNombre = buildPdfFilename();
+
     }).save().then(function(){
       // Restaurar
       ocultarColumna('', 'none');
