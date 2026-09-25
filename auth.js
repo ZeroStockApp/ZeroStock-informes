@@ -192,10 +192,13 @@
       #zs-historicos { max-width:800px; margin:18px auto 30px; padding:30px 32px; box-sizing:border-box; background:#fff; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.10); font-family:Arial,sans-serif; }
       #zs-historicos h2 { margin:0 0 22px; color:#2c3e50; font-family:'Playfair Display',serif; font-size:27px; text-align:center; }
       .zs-historicos-volver { margin-bottom:18px; border:0; background:transparent; color:#ad1457; font-weight:700; cursor:pointer; padding:0; }
-      .zs-historico-card { width:100%; box-sizing:border-box; margin:0 0 12px; padding:17px 18px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; text-align:left; cursor:pointer; }
+      .zs-historico-card { width:100%; box-sizing:border-box; margin:0 0 12px; padding:17px 18px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:16px; }
       .zs-historico-card:hover { border-color:#f8bbd0; box-shadow:0 5px 14px rgba(0,0,0,.06); }
       .zs-historico-card strong { display:block; color:#ad1457; font-size:16px; margin-bottom:6px; }
       .zs-historico-card span { display:block; color:#6b7280; font-size:13px; line-height:1.45; }
+      .zs-historico-info { min-width:0; }
+      .zs-historico-descargar { flex:0 0 auto; border:0; border-radius:8px; padding:10px 15px; background:#ad1457; color:#fff; font-weight:700; cursor:pointer; }
+      .zs-historico-descargar:disabled { opacity:.55; cursor:default; }
       .zs-historicos-mensaje { text-align:center; color:#6b7280; padding:24px 10px; }
       .zs-detalle-meta { margin:0 0 20px; padding:14px 16px; background:#f8f9fa; border-radius:9px; color:#4b5563; font-size:14px; line-height:1.6; }
       .zs-detalle-tabla-wrap { overflow-x:auto; }
@@ -419,16 +422,21 @@
 
       const lista = panel.querySelector("#zs-historicos-lista");
       informes.forEach(informe => {
-        const boton = document.createElement("button");
-        boton.type = "button";
-        boton.className = "zs-historico-card";
-        boton.innerHTML = `
-          <strong>${escaparHtml(textoTipoInforme(informe.tipo))}</strong>
-          <span>${escaparHtml(formatearFechaInforme(informe.finalizado_en))}</span>
-          <span>${escaparHtml(informe.distribuidor || "")}</span>
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "zs-historico-card";
+        tarjeta.innerHTML = `
+          <div class="zs-historico-info">
+            <strong>${escaparHtml(textoTipoInforme(informe.tipo))}</strong>
+            <span>${escaparHtml(formatearFechaInforme(informe.finalizado_en))}</span>
+            <span>${escaparHtml(informe.distribuidor || "")}</span>
+          </div>
+          <button class="zs-historico-descargar" type="button">Descargar PDF</button>
         `;
-        boton.addEventListener("click", () => mostrarDetalleHistorico(informe));
-        lista.appendChild(boton);
+        tarjeta.querySelector(".zs-historico-descargar")
+          .addEventListener("click", (event) =>
+            descargarPdfHistorico(informe.id, event.currentTarget)
+          );
+        lista.appendChild(tarjeta);
       });
     } catch (err) {
       console.error("No se pudieron cargar los informes finalizados:", err);
