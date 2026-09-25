@@ -1590,6 +1590,29 @@
       borradorDisponible = null;
       window.zeroStockInformeEnCursoId = null;
 
+      // Volver al inicio inmediatamente, sin volver a consultar Supabase.
+      // Como el informe acaba de finalizar correctamente, sabemos que ya no
+      // existe un informe en curso y podemos reflejarlo directamente.
+      const panel = crearPanelInicioSiHaceFalta();
+      const btnContinuar = panel.querySelector("#zs-continuar-informe");
+      const estadoBorrador = panel.querySelector("#zs-borrador-estado");
+      const saludo = panel.querySelector("#zs-inicio-saludo");
+
+      app.style.display = "none";
+      panel.style.display = "block";
+
+      const volverInicio = document.getElementById("zs-volver-inicio");
+      if (volverInicio) volverInicio.style.display = "none";
+
+      if (saludo) {
+        saludo.textContent = window.zeroStockPerfil?.nombre
+          ? `Hola, ${window.zeroStockPerfil.nombre}`
+          : "";
+      }
+
+      if (btnContinuar) btnContinuar.disabled = true;
+      if (estadoBorrador) estadoBorrador.textContent = "No tienes informes en curso";
+
 
     } catch (err) {
 
