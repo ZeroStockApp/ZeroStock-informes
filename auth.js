@@ -1050,7 +1050,7 @@
       .from("informes-pdf")
       .upload(rutaPdf, pdfBlob, {
         contentType: "application/pdf",
-        upsert: true
+        upsert: false
       });
 
     if (error) throw error;
