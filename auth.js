@@ -99,9 +99,20 @@
       // La cuenta operativa "Stock" corresponde al distribuidor histórico "Stock Rmc".
       // Mantenemos el nombre del selector porque otras partes del formulario/PDF lo usan.
       const objetivoDistribuidor = objetivo === "stock" ? "stock rmc" : objetivo;
-      const opcion = Array.from(distribuidorEl.options).find(opt =>
+      let opcion = Array.from(distribuidorEl.options).find(opt =>
         normalizar(opt.textContent) === objetivoDistribuidor
       );
+
+      // Si el perfil autenticado todavía no existe en el selector antiguo,
+      // lo agregamos solo para esta sesión. Así el formulario y el PDF usan
+      // siempre el nombre real del perfil sin mantener una lista manual.
+      if (!opcion && objetivo !== "stock") {
+        opcion = document.createElement("option");
+        opcion.value = `usuario-${session.user.id}`;
+        opcion.textContent = nombrePerfil;
+        distribuidorEl.appendChild(opcion);
+      }
+
       if (opcion) distribuidorEl.value = opcion.value;
     }
     userLabel.textContent = perfil.nombre;
