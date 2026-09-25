@@ -1133,10 +1133,14 @@ function activarEventosTallaInputs() {
 }
 
 function actualizarCamposPorTipo() {
-// Mostramos el contenido principal al seleccionar un tipo de informe
-document.getElementById("formulario-completo").style.display = "block";
-
   const tipo = tipoInforme.value;
+  const formularioCompleto = document.getElementById("formulario-completo");
+
+  // Un informe nuevo comienza neutro: solo se muestra el resto del formulario
+  // después de que la persona elige un tipo de informe válido.
+  if (formularioCompleto) {
+    formularioCompleto.style.display = (tipo === "1" || tipo === "2" || tipo === "3") ? "block" : "none";
+  }
   const bloqueTallas = document.getElementById("bloque-tallas");
   const bloqueCantidad = document.getElementById("bloque-cantidad");
   const boxEstado = document.getElementById("box-estado");
@@ -1192,8 +1196,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const tipoInforme = document.getElementById('tipo-informe');
   const formularioCompleto = document.getElementById('formulario-completo');
 
-  // El formulario permanece visible: el tipo de informe se elige dentro del propio formulario.
-  formularioCompleto.style.display = 'block';
+  // Al abrir un informe nuevo, dejamos visible únicamente el selector de tipo.
+  // Los demás campos aparecen después de elegir Inventario, Devolución o Recepción.
+  formularioCompleto.style.display = 'none';
 
   // Actualiza los campos específicos cuando cambia el tipo de informe.
   tipoInforme.addEventListener('change', function () {
