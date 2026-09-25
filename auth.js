@@ -190,6 +190,28 @@
   // NAVEGACIÓN PRINCIPAL DE ZEROSTOCK
   // =========================================================
 
+  // Oculta el selector de tipo una vez elegido, sin borrar su valor.
+  // Se vuelve a mostrar cuando se inicia un informe nuevo.
+  function configurarSelectorTipoInformeZeroStock() {
+    const tipoEl = document.getElementById("tipo-informe");
+    if (!tipoEl) return;
+
+    const boxTipo = tipoEl.closest(".box");
+    if (!boxTipo) return;
+
+    const actualizarVisibilidad = () => {
+      boxTipo.style.display =
+        tipoEl.value && tipoEl.value !== "0" ? "none" : "";
+    };
+
+    if (!tipoEl.dataset.zsOcultarTipoConectado) {
+      tipoEl.dataset.zsOcultarTipoConectado = "1";
+      tipoEl.addEventListener("change", actualizarVisibilidad);
+    }
+
+    actualizarVisibilidad();
+  }
+
   function crearPanelInicioSiHaceFalta() {
     if (panelInicio) return panelInicio;
 
@@ -356,6 +378,8 @@
         tipoNuevoEl.value = "0";
         tipoNuevoEl.dispatchEvent(new Event("change", { bubbles: true }));
       }
+
+      configurarSelectorTipoInformeZeroStock();
 
       panelInicio.style.display = "none";
       app.style.display = "block";
@@ -814,6 +838,7 @@
     const session = window.zeroStockSession;
     if (!session?.user?.id) return;
     const panel = crearPanelInicioSiHaceFalta();
+    configurarSelectorTipoInformeZeroStock();
     const saludo = panel.querySelector("#zs-inicio-saludo");
     const btnContinuar = panel.querySelector("#zs-continuar-informe");
     const estado = panel.querySelector("#zs-borrador-estado");
