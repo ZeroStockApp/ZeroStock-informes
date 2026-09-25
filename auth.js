@@ -208,6 +208,10 @@
       .zs-pdf-acciones { margin:18px 0 0; text-align:right; }
       .zs-pdf-btn { border:0; border-radius:8px; padding:10px 15px; background:#ad1457; color:#fff; font-weight:700; cursor:pointer; }
       .zs-pdf-btn:disabled { opacity:.55; cursor:default; }
+      .zs-admin-selector { margin:0 0 22px; padding:16px; background:#f8f9fa; border-radius:9px; }
+      .zs-admin-selector label { display:block; margin-bottom:8px; color:#374151; font-size:14px; font-weight:700; }
+      .zs-admin-selector select { width:100%; box-sizing:border-box; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; color:#374151; }
+      @media (min-width:701px) { .zs-inicio-opciones.zs-inicio-opciones-admin { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } #zs-historicos { margin:12px auto 24px; padding:24px 18px; } }
     `;
     document.head.appendChild(estilos);
@@ -221,6 +225,7 @@
         <button class="zs-inicio-opcion" id="zs-crear-informe" type="button"><strong>Crear informe</strong><span>Empieza un informe nuevo.</span></button>
         <button class="zs-inicio-opcion" id="zs-continuar-informe" type="button" disabled><strong>Informe en curso</strong><span>Continúa el informe que dejaste pendiente.</span><span class="zs-inicio-estado" id="zs-borrador-estado">Buscando informe en curso...</span></button>
         <button class="zs-inicio-opcion" id="zs-ver-informes" type="button"><strong>Ver informes</strong><span>Consulta tus últimos 4 informes finalizados.</span></button>
+        <button class="zs-inicio-opcion" id="zs-administrar-informes" type="button" style="display:none;"><strong>Administrar informes</strong><span>Consulta los informes de los distribuidores.</span></button>
       </div>`;
     sessionBar.insertAdjacentElement("afterend", panelInicio);
 
@@ -313,6 +318,10 @@
 
     panelInicio.querySelector("#zs-ver-informes").addEventListener("click", async () => {
       await mostrarHistoricos();
+    });
+
+    panelInicio.querySelector("#zs-administrar-informes").addEventListener("click", async () => {
+      await mostrarAdministracionInformes();
     });
 
     return panelInicio;
@@ -577,6 +586,174 @@
     }
   }
 
+  function esAdministradoraActual() {
+    return String(window.zeroStockPerfil?.rol || "").trim().toLowerCase() === "administradora";
+  }
+
+  async function mostrarAdministracionInformes() {
+    const session = window.zeroStockSession;
+    if (!session?.user?.id || !esAdministradoraActual()) return;
+
+    const panel = obtenerPanelHistoricos();
+    if (panelInicio) panelInicio.style.display = "none";
+    app.style.display = "none";
+    const volverInicio = document.getElementById("zs-volver-inicio");
+    if (volverInicio) volverInicio.style.display = "none";
+
+    panel.style.display = "block";
+    panel.innerHTML = `
+      <button class="zs-historicos-volver" id="zs-admin-inicio" type="button">← Volver al inicio</button>
+      <h2>Administrar informes</h2>
+      <div class="zs-historicos-mensaje">Cargando distribuidores...</div>
+    `;
+    panel.querySelector("#zs-admin-inicio").addEventListener("click", volverDesdeHistoricosAlInicio);
+
+    try {
+      const { data: perfiles, error } = await client
+        .from("perfiles")
+        .select("id, nombre, rol, activo")
+        .eq("activo", true)
+        .order("nombre", { ascending: true });
+
+      if (error) throw error;
+
+      const distribuidores = (perfiles || []).filter(perfil =>
+        perfil?.id &&
+        String(perfil?.rol || "").trim().toLowerCase() !== "administradora"
+      );
+
+      const opciones = distribuidores.map(perfil =>
+        `<option value="${escaparHtml(perfil.id)}">${escaparHtml(perfil.nombre || "Sin nombre")}</option>`
+      ).join("");
+
+      panel.innerHTML = `
+        <button class="zs-historicos-volver" id="zs-admin-inicio" type="button">← Volver al inicio</button>
+        <h2>Administrar informes</h2>
+        <div class="zs-admin-selector">
+          <label for="zs-admin-distribuidor">Distribuidor</label>
+          <select id="zs-admin-distribuidor">
+            <option value="">Selecciona un distribuidor</option>
+            ${opciones}
+          </select>
+        </div>
+        <div id="zs-admin-lista">
+          <div class="zs-historicos-mensaje">Selecciona un distribuidor para ver sus informes.</div>
+        </div>
+      `;
+
+      panel.querySelector("#zs-admin-inicio").addEventListener("click", volverDesdeHistoricosAlInicio);
+      panel.querySelector("#zs-admin-distribuidor").addEventListener("change", async (event) => {
+        const usuarioId = event.currentTarget.value;
+        const nombre = event.currentTarget.selectedOptions?.[0]?.textContent || "";
+        await cargarInformesDistribuidor(usuarioId, nombre);
+      });
+
+      if (distribuidores.length === 0) {
+        panel.querySelector("#zs-admin-lista").innerHTML =
+          '<div class="zs-historicos-mensaje">No hay distribuidores activos disponibles.</div>';
+      }
+    } catch (err) {
+      console.error("No se pudieron cargar los distribuidores:", err);
+      panel.innerHTML = `
+        <button class="zs-historicos-volver" id="zs-admin-inicio" type="button">← Volver al inicio</button>
+        <h2>Administrar informes</h2>
+        <div class="zs-historicos-mensaje">No fue posible cargar los distribuidores. Inténtalo nuevamente.</div>
+      `;
+      panel.querySelector("#zs-admin-inicio").addEventListener("click", volverDesdeHistoricosAlInicio);
+    }
+  }
+
+  async function cargarInformesDistribuidor(usuarioId, nombreDistribuidor) {
+    const panel = obtenerPanelHistoricos();
+    const contenedor = panel.querySelector("#zs-admin-lista");
+    if (!contenedor) return;
+
+    if (!usuarioId) {
+      contenedor.innerHTML =
+        '<div class="zs-historicos-mensaje">Selecciona un distribuidor para ver sus informes.</div>';
+      return;
+    }
+
+    contenedor.innerHTML = '<div class="zs-historicos-mensaje">Cargando informes...</div>';
+
+    try {
+      const { data: informes, error } = await client
+        .from("informes")
+        .select("id, usuario_id, tipo, distribuidor, finalizado_en")
+        .eq("usuario_id", usuarioId)
+        .eq("estado", "finalizado")
+        .order("finalizado_en", { ascending: false })
+        .limit(4);
+
+      if (error) throw error;
+
+      if (!informes || informes.length === 0) {
+        contenedor.innerHTML =
+          `<div class="zs-historicos-mensaje">${escaparHtml(nombreDistribuidor)} todavía no tiene informes finalizados.</div>`;
+        return;
+      }
+
+      contenedor.innerHTML = "";
+      informes.forEach(informe => {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "zs-historico-card";
+        tarjeta.innerHTML = `
+          <div class="zs-historico-info">
+            <strong>${escaparHtml(textoTipoInforme(informe.tipo))}</strong>
+            <span>${escaparHtml(formatearFechaInforme(informe.finalizado_en))}</span>
+            <span>${escaparHtml(informe.distribuidor || nombreDistribuidor || "")}</span>
+          </div>
+          <button class="zs-historico-descargar" type="button">Descargar PDF</button>
+        `;
+        tarjeta.querySelector(".zs-historico-descargar").addEventListener("click", (event) =>
+          descargarPdfAdministrado(informe, event.currentTarget)
+        );
+        contenedor.appendChild(tarjeta);
+      });
+    } catch (err) {
+      console.error("No se pudieron cargar los informes del distribuidor:", err);
+      contenedor.innerHTML =
+        '<div class="zs-historicos-mensaje">No fue posible cargar los informes de este distribuidor.</div>';
+    }
+  }
+
+  async function descargarPdfAdministrado(informe, boton) {
+    if (!informe?.id || !informe?.usuario_id || !esAdministradoraActual()) return;
+
+    const textoOriginal = boton?.textContent || "Descargar PDF";
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = "Preparando PDF...";
+    }
+
+    try {
+      const rutaPdf = `${informe.usuario_id}/${informe.id}.pdf`;
+      const { data, error } = await client.storage
+        .from("informes-pdf")
+        .download(rutaPdf);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = `Informe_${informe.id}.pdf`;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("No se pudo descargar el PDF administrado:", err);
+      alert("Este informe no tiene un PDF guardado disponible o la cuenta administradora no tiene acceso al archivo.");
+    } finally {
+      if (boton) {
+        boton.disabled = false;
+        boton.textContent = textoOriginal;
+      }
+    }
+  }
+
+
   async function prepararInicioZeroStock() {
     const session = window.zeroStockSession;
     if (!session?.user?.id) return;
@@ -584,6 +761,11 @@
     const saludo = panel.querySelector("#zs-inicio-saludo");
     const btnContinuar = panel.querySelector("#zs-continuar-informe");
     const estado = panel.querySelector("#zs-borrador-estado");
+    const btnAdministrar = panel.querySelector("#zs-administrar-informes");
+    const opcionesInicio = panel.querySelector(".zs-inicio-opciones");
+    const esAdmin = esAdministradoraActual();
+    if (btnAdministrar) btnAdministrar.style.display = esAdmin ? "" : "none";
+    if (opcionesInicio) opcionesInicio.classList.toggle("zs-inicio-opciones-admin", esAdmin);
     app.style.display = "none";
     panel.style.display = "block";
     const volverInicio = document.getElementById("zs-volver-inicio");
