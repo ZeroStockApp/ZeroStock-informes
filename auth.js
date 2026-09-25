@@ -232,6 +232,8 @@
       .zs-historicos-volver { margin-bottom:18px; border:0; background:transparent; color:#ad1457; font-weight:700; cursor:pointer; padding:0; }
       .zs-historico-card { width:100%; box-sizing:border-box; margin:0 0 12px; padding:17px 18px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:16px; }
       .zs-historico-card:hover { border-color:#f8bbd0; box-shadow:0 5px 14px rgba(0,0,0,.06); }
+      .zs-historico-card.zs-ultimo-informe { border:2px solid #ad1457; background:#fff7fa; box-shadow:0 5px 14px rgba(173,20,87,.10); }
+      .zs-ultimo-etiqueta { display:inline-block!important; margin:0 0 7px; padding:4px 8px; border-radius:999px; background:#ad1457; color:#fff!important; font-size:11px!important; line-height:1.2!important; font-weight:700; letter-spacing:.2px; }
       .zs-historico-card strong { display:block; color:#ad1457; font-size:16px; margin-bottom:6px; }
       .zs-historico-card span { display:block; color:#6b7280; font-size:13px; line-height:1.45; }
       .zs-historico-info { min-width:0; }
@@ -510,11 +512,13 @@
         .addEventListener("click", volverDesdeHistoricosAlInicio);
 
       const lista = panel.querySelector("#zs-historicos-lista");
-      informes.forEach(informe => {
+      informes.forEach((informe, index) => {
         const tarjeta = document.createElement("div");
         tarjeta.className = "zs-historico-card";
+        if (index === 0) tarjeta.classList.add("zs-ultimo-informe");
         tarjeta.innerHTML = `
           <div class="zs-historico-info">
+            ${index === 0 ? '<span class="zs-ultimo-etiqueta">ÚLTIMO INFORME</span>' : ''}
             <strong>${escaparHtml(textoTipoInforme(informe.tipo))}</strong>
             <span>${escaparHtml(formatearFechaInforme(informe.finalizado_en))}</span>
             <span>${escaparHtml(informe.distribuidor || "")}</span>
@@ -774,11 +778,13 @@
       }
 
       contenedor.innerHTML = "";
-      informes.forEach(informe => {
+      informes.forEach((informe, index) => {
         const tarjeta = document.createElement("div");
         tarjeta.className = "zs-historico-card";
+        if (index === 0) tarjeta.classList.add("zs-ultimo-informe");
         tarjeta.innerHTML = `
           <div class="zs-historico-info">
+            ${index === 0 ? '<span class="zs-ultimo-etiqueta">ÚLTIMO INFORME</span>' : ''}
             <strong>${escaparHtml(textoTipoInforme(informe.tipo))}</strong>
             <span>${escaparHtml(formatearFechaInforme(informe.finalizado_en))}</span>
             <span>${escaparHtml(informe.distribuidor || nombreDistribuidor || "")}</span>
