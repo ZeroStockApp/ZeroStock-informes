@@ -317,6 +317,38 @@
         }
       }
 
+      // Al abrir un informe nuevo, vuelve a fijar el distribuidor según
+      // el perfil autenticado. Esto evita arrastrar "Stock Rmc" de una
+      // sesión anterior cuando entra una distribuidora como Claudia.
+      const distribuidorEl = document.getElementById("distribuidor");
+      const nombrePerfil = (window.zeroStockPerfil?.nombre || "").trim();
+      const session = window.zeroStockSession;
+
+      if (distribuidorEl && nombrePerfil && session?.user?.id) {
+        const normalizar = s => String(s || "")
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase().trim();
+
+        const objetivo = normalizar(nombrePerfil);
+        const objetivoDistribuidor = objetivo === "stock" ? "stock rmc" : objetivo;
+
+        let opcion = Array.from(distribuidorEl.options).find(opt =>
+          normalizar(opt.textContent) === objetivoDistribuidor
+        );
+
+        if (!opcion && objetivo !== "stock") {
+          opcion = document.createElement("option");
+          opcion.value = `usuario-${session.user.id}`;
+          opcion.textContent = nombrePerfil;
+          distribuidorEl.appendChild(opcion);
+        }
+
+        if (opcion) {
+          distribuidorEl.value = opcion.value;
+          distribuidorEl.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+
       panelInicio.style.display = "none";
       app.style.display = "block";
       const volverInicio = document.getElementById("zs-volver-inicio");
