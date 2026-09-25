@@ -40,6 +40,11 @@
     login.style.display = "flex";
     app.style.display = "none";
     if (panelInicio) panelInicio.style.display = "none";
+    // Si la sesión anterior estaba en “Ver informes” o “Administrar informes”,
+    // ocultamos ese panel antes de mostrar el login para que no quede visible
+    // al entrar con otra cuenta.
+    const panelHistoricos = document.getElementById("zs-historicos");
+    if (panelHistoricos) panelHistoricos.style.display = "none";
     sessionBar.style.display = "none";
     userLabel.textContent = "";
     window.zeroStockSession = null;
