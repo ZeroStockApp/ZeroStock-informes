@@ -76,8 +76,17 @@
     try {
       if (!client?.functions?.invoke) throw new Error("No se pudo conectar con la administración de usuarios.");
 
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) throw new Error("No hay una sesión autenticada disponible.");
+
       const { data, error } = await client.functions.invoke("administrar-usuarios", {
-        body: { nombre, email, password }
+        body: { nombre, email, password },
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
       });
 
       if (error) throw error;
