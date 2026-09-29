@@ -304,8 +304,25 @@
     const pregunta = panelUsuarios?.querySelector("#zs-eliminar-pregunta");
     const mensaje = panelUsuarios?.querySelector("#zs-eliminar-mensaje");
 
+    const botonEliminar = panelUsuarios?.querySelector("#zs-eliminar-confirmar");
+    const botonCancelar = panelUsuarios?.querySelector("#zs-eliminar-cancelar");
+
     if (pregunta) pregunta.textContent = `¿Eliminar a ${usuario.nombre || "este usuario"}?`;
     if (mensaje) mensaje.textContent = "";
+
+    // Restablecer los botones al abrir una nueva confirmación.
+    if (botonEliminar) {
+      botonEliminar.style.display = "";
+      botonEliminar.disabled = false;
+      botonEliminar.textContent = "Eliminar";
+    }
+
+    if (botonCancelar) {
+      botonCancelar.disabled = false;
+      botonCancelar.textContent = "Cancelar";
+      botonCancelar.onclick = null;
+    }
+
     if (confirmacion) confirmacion.style.display = "block";
     if (volverInicio) volverInicio.style.display = "none";
   }
