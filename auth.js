@@ -251,15 +251,6 @@
       .zs-admin-selector { margin:0 0 22px; padding:16px; background:#f8f9fa; border-radius:9px; }
       .zs-admin-selector label { display:block; margin-bottom:8px; color:#374151; font-size:14px; font-weight:700; }
       .zs-admin-selector select { width:100%; box-sizing:border-box; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; color:#374151; }
-      .zs-usuarios-form { max-width:520px; margin:0 auto; }
-      .zs-usuarios-campo { margin-bottom:16px; }
-      .zs-usuarios-campo label { display:block; margin-bottom:7px; color:#374151; font-size:14px; font-weight:700; }
-      .zs-usuarios-campo input { width:100%; box-sizing:border-box; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; color:#374151; }
-      .zs-usuarios-submit { width:100%; border:0; border-radius:8px; padding:12px; background:#ad1457; color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
-      .zs-usuarios-submit:disabled { opacity:.55; cursor:default; }
-      .zs-usuarios-mensaje { min-height:20px; margin-top:14px; text-align:center; font-size:13px; line-height:1.45; }
-      .zs-usuarios-mensaje.zs-error { color:#b91c1c; }
-      .zs-usuarios-mensaje.zs-exito { color:#166534; }
       @media (min-width:701px) { .zs-inicio-opciones.zs-inicio-opciones-admin { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } #zs-historicos { margin:12px auto 24px; padding:24px 18px; } }
     `;
@@ -275,7 +266,6 @@
         <button class="zs-inicio-opcion" id="zs-continuar-informe" type="button" disabled><strong>Informe en curso</strong><span>Continúa el informe que dejaste pendiente.</span><span class="zs-inicio-estado" id="zs-borrador-estado">Buscando informe en curso...</span></button>
         <button class="zs-inicio-opcion" id="zs-ver-informes" type="button"><strong>Ver informes</strong><span>Consulta tus últimos 4 informes finalizados.</span></button>
         <button class="zs-inicio-opcion" id="zs-administrar-informes" type="button" style="display:none;"><strong>Administrar informes</strong><span>Consulta los informes de los distribuidores.</span></button>
-        <button class="zs-inicio-opcion" id="zs-administrar-usuarios" type="button" style="display:none;"><strong>Administrar usuarios</strong><span>Crea nuevas cuentas de distribuidores.</span></button>
       </div>`;
     sessionBar.insertAdjacentElement("afterend", panelInicio);
 
@@ -414,10 +404,6 @@
 
     panelInicio.querySelector("#zs-administrar-informes").addEventListener("click", async () => {
       await mostrarAdministracionInformes();
-    });
-
-    panelInicio.querySelector("#zs-administrar-usuarios").addEventListener("click", () => {
-      mostrarAdministracionUsuarios();
     });
 
     return panelInicio;
@@ -734,83 +720,6 @@
     return String(window.zeroStockPerfil?.rol || "").trim().toLowerCase() === "administradora";
   }
 
-  function mostrarAdministracionUsuarios() {
-    const session = window.zeroStockSession;
-    if (!session?.user?.id || !esAdministradoraActual()) return;
-
-    const panel = obtenerPanelHistoricos();
-    if (panelInicio) panelInicio.style.display = "none";
-    app.style.display = "none";
-    const volverInicio = document.getElementById("zs-volver-inicio");
-    if (volverInicio) volverInicio.style.display = "none";
-
-    panel.style.display = "block";
-    panel.innerHTML = `
-      <button class="zs-historicos-volver" id="zs-usuarios-inicio" type="button">← Volver al inicio</button>
-      <h2>Administrar usuarios</h2>
-      <form class="zs-usuarios-form" id="zs-usuarios-form">
-        <div class="zs-usuarios-campo">
-          <label for="zs-usuario-nombre">Nombre</label>
-          <input id="zs-usuario-nombre" name="nombre" type="text" autocomplete="off" required>
-        </div>
-        <div class="zs-usuarios-campo">
-          <label for="zs-usuario-email">Correo electrónico</label>
-          <input id="zs-usuario-email" name="email" type="email" autocomplete="off" required>
-        </div>
-        <div class="zs-usuarios-campo">
-          <label for="zs-usuario-password">Contraseña inicial</label>
-          <input id="zs-usuario-password" name="password" type="password" autocomplete="new-password" minlength="6" required>
-        </div>
-        <button class="zs-usuarios-submit" id="zs-usuarios-submit" type="submit">Crear usuario</button>
-        <div class="zs-usuarios-mensaje" id="zs-usuarios-mensaje" role="status" aria-live="polite"></div>
-      </form>
-    `;
-
-    panel.querySelector("#zs-usuarios-inicio").addEventListener("click", volverDesdeHistoricosAlInicio);
-    panel.querySelector("#zs-usuarios-form").addEventListener("submit", crearUsuarioDistribuidor);
-  }
-
-  async function crearUsuarioDistribuidor(event) {
-    event.preventDefault();
-    if (!esAdministradoraActual()) return;
-
-    const formUsuarios = event.currentTarget;
-    const botonCrear = formUsuarios.querySelector("#zs-usuarios-submit");
-    const mensaje = formUsuarios.querySelector("#zs-usuarios-mensaje");
-    const nombre = formUsuarios.querySelector("#zs-usuario-nombre").value.trim();
-    const emailUsuario = formUsuarios.querySelector("#zs-usuario-email").value.trim();
-    const passwordUsuario = formUsuarios.querySelector("#zs-usuario-password").value;
-
-    mensaje.className = "zs-usuarios-mensaje";
-    mensaje.textContent = "";
-    botonCrear.disabled = true;
-    botonCrear.textContent = "Creando usuario...";
-
-    try {
-      const { data, error } = await client.functions.invoke("administrar-usuarios", {
-        body: {
-          nombre,
-          email: emailUsuario,
-          password: passwordUsuario
-        }
-      });
-
-      if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error || "No fue posible crear el usuario.");
-
-      formUsuarios.reset();
-      mensaje.classList.add("zs-exito");
-      mensaje.textContent = `Usuario ${data.usuario?.nombre || nombre} creado correctamente.`;
-    } catch (err) {
-      console.error("No se pudo crear el usuario:", err);
-      mensaje.classList.add("zs-error");
-      mensaje.textContent = err?.message || "No fue posible crear el usuario. Inténtalo nuevamente.";
-    } finally {
-      botonCrear.disabled = false;
-      botonCrear.textContent = "Crear usuario";
-    }
-  }
-
   async function mostrarAdministracionInformes() {
     const session = window.zeroStockSession;
     if (!session?.user?.id || !esAdministradoraActual()) return;
@@ -986,11 +895,9 @@
     const btnContinuar = panel.querySelector("#zs-continuar-informe");
     const estado = panel.querySelector("#zs-borrador-estado");
     const btnAdministrar = panel.querySelector("#zs-administrar-informes");
-    const btnAdministrarUsuarios = panel.querySelector("#zs-administrar-usuarios");
     const opcionesInicio = panel.querySelector(".zs-inicio-opciones");
     const esAdmin = esAdministradoraActual();
     if (btnAdministrar) btnAdministrar.style.display = esAdmin ? "" : "none";
-    if (btnAdministrarUsuarios) btnAdministrarUsuarios.style.display = esAdmin ? "" : "none";
     if (opcionesInicio) opcionesInicio.classList.toggle("zs-inicio-opciones-admin", esAdmin);
     app.style.display = "none";
     panel.style.display = "block";
