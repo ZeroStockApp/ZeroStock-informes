@@ -10,6 +10,19 @@
   const sessionBar = document.getElementById("zs-sesion");
   const userLabel = document.getElementById("zs-usuario");
   const logout = document.getElementById("zs-logout");
+  const olvideClave = document.getElementById("zs-olvide-clave");
+  const recuperarBox = document.getElementById("zs-recuperar");
+  const recuperarForm = document.getElementById("zs-recuperar-form");
+  const recuperarEmail = document.getElementById("zs-recuperar-email");
+  const recuperarBtn = document.getElementById("zs-recuperar-btn");
+  const recuperarMensaje = document.getElementById("zs-recuperar-mensaje");
+  const volverLogin = document.getElementById("zs-volver-login");
+  const nuevaClaveBox = document.getElementById("zs-nueva-clave");
+  const nuevaClaveForm = document.getElementById("zs-nueva-clave-form");
+  const nuevaPassword = document.getElementById("zs-nueva-password");
+  const confirmarPassword = document.getElementById("zs-confirmar-password");
+  const guardarClave = document.getElementById("zs-guardar-clave");
+  const nuevaClaveMensaje = document.getElementById("zs-nueva-clave-mensaje");
   const app = document.getElementById("contenedor");
   let panelInicio = null;
   let borradorDisponible = null;
@@ -36,8 +49,15 @@
   let usuarioAppCargado = null;
   let cargandoApp = false;
 
+  function mostrarFormularioLogin() {
+    form.style.display = "block";
+    recuperarBox.style.display = "none";
+    nuevaClaveBox.style.display = "none";
+  }
+
   function showLogin() {
     login.style.display = "flex";
+    mostrarFormularioLogin();
     app.style.display = "none";
     if (panelInicio) panelInicio.style.display = "none";
     // Si la sesión anterior estaba en “Ver informes” o “Administrar informes”,
@@ -125,6 +145,86 @@
     }, 0);
   }
 
+  olvideClave.addEventListener("click", () => {
+    errorBox.textContent = "";
+    recuperarMensaje.textContent = "";
+    recuperarMensaje.style.color = "#374151";
+    recuperarEmail.value = email.value.trim();
+    form.style.display = "none";
+    nuevaClaveBox.style.display = "none";
+    recuperarBox.style.display = "block";
+  });
+
+  volverLogin.addEventListener("click", () => {
+    recuperarMensaje.textContent = "";
+    mostrarFormularioLogin();
+  });
+
+  recuperarForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    recuperarMensaje.textContent = "";
+    recuperarBtn.disabled = true;
+    recuperarBtn.textContent = "Enviando...";
+
+    try {
+      const redirectTo = `${window.location.origin}${window.location.pathname}`;
+      const { error } = await client.auth.resetPasswordForEmail(
+        recuperarEmail.value.trim(),
+        { redirectTo }
+      );
+      if (error) throw error;
+
+      recuperarMensaje.style.color = "#047857";
+      recuperarMensaje.textContent = "Revisa tu correo. Te enviamos un enlace para crear una contraseña nueva.";
+    } catch (err) {
+      console.error(err);
+      recuperarMensaje.style.color = "#b91c1c";
+      recuperarMensaje.textContent = "No fue posible enviar el enlace. Revisa el correo e inténtalo nuevamente.";
+    } finally {
+      recuperarBtn.disabled = false;
+      recuperarBtn.textContent = "Enviar enlace";
+    }
+  });
+
+  nuevaClaveForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    nuevaClaveMensaje.textContent = "";
+
+    if (nuevaPassword.value !== confirmarPassword.value) {
+      nuevaClaveMensaje.style.color = "#b91c1c";
+      nuevaClaveMensaje.textContent = "Las contraseñas no coinciden.";
+      return;
+    }
+
+    guardarClave.disabled = true;
+    guardarClave.textContent = "Guardando...";
+
+    try {
+      const { error } = await client.auth.updateUser({
+        password: nuevaPassword.value
+      });
+      if (error) throw error;
+
+      nuevaClaveMensaje.style.color = "#047857";
+      nuevaClaveMensaje.textContent = "Contraseña actualizada correctamente. Ya puedes iniciar sesión.";
+      nuevaPassword.value = "";
+      confirmarPassword.value = "";
+
+      await client.auth.signOut();
+      setTimeout(() => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        showLogin();
+      }, 1200);
+    } catch (err) {
+      console.error(err);
+      nuevaClaveMensaje.style.color = "#b91c1c";
+      nuevaClaveMensaje.textContent = "No fue posible actualizar la contraseña. Solicita un enlace nuevo e inténtalo otra vez.";
+    } finally {
+      guardarClave.disabled = false;
+      guardarClave.textContent = "Guardar nueva contraseña";
+    }
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -167,7 +267,18 @@
     showLogin();
   });
 
-  client.auth.onAuthStateChange((_event, session) => {
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY") {
+      login.style.display = "flex";
+      form.style.display = "none";
+      recuperarBox.style.display = "none";
+      nuevaClaveBox.style.display = "block";
+      app.style.display = "none";
+      sessionBar.style.display = "none";
+      nuevaClaveMensaje.textContent = "";
+      return;
+    }
+
     if (session) {
       showApp(session);
     } else {
