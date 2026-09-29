@@ -3,6 +3,7 @@
 
   let panelUsuarios = null;
   let observer = null;
+  let usuarioSeleccionado = null;
 
   function esAdministradora() {
     return String(window.zeroStockPerfil?.rol || "").trim().toLowerCase() === "administradora";
@@ -12,6 +13,36 @@
     if (panelUsuarios) panelUsuarios.style.display = "none";
     const panelInicio = document.getElementById("zs-inicio");
     if (panelInicio) panelInicio.style.display = "block";
+  }
+
+  async function obtenerAccessToken() {
+    const client = window.zeroStockSupabase;
+    if (!client?.functions?.invoke) {
+      throw new Error("No se pudo conectar con la administración de usuarios.");
+    }
+
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) throw new Error("No hay una sesión autenticada disponible.");
+    return accessToken;
+  }
+
+  async function invocarAdministrarUsuarios(body) {
+    const client = window.zeroStockSupabase;
+    const accessToken = await obtenerAccessToken();
+
+    const { data, error } = await client.functions.invoke("administrar-usuarios", {
+      body,
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+
+    if (error) throw error;
+    if (!data?.ok) throw new Error(data?.error || "No fue posible completar la operación.");
+    return data;
   }
 
   function crearPanelUsuarios() {
@@ -58,6 +89,31 @@
           <button id="zs-usuarios-submit" type="submit" style="width:100%;border:0;border-radius:8px;padding:12px;background:#ad1457;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Crear usuario</button>
           <div id="zs-usuarios-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
         </form>
+      </div>
+
+      <div id="zs-usuarios-editar" style="display:none;max-width:520px;margin:0 auto;">
+        <button id="zs-editar-volver" type="button" style="border:0;background:transparent;color:#ad1457;font-weight:700;cursor:pointer;padding:0 0 18px;">← Volver a administrar usuarios</button>
+        <h3 style="margin:0 0 8px;color:#1f2937;font-size:18px;">Editar usuario</h3>
+        <p style="margin:0 0 18px;color:#6b7280;font-size:13px;">Selecciona el distribuidor que quieres modificar.</p>
+        <div id="zs-editar-lista" style="display:grid;gap:10px;"></div>
+        <div id="zs-editar-lista-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
+      </div>
+
+      <div id="zs-usuarios-editar-formulario" style="display:none;max-width:520px;margin:0 auto;">
+        <button id="zs-editar-form-volver" type="button" style="border:0;background:transparent;color:#ad1457;font-weight:700;cursor:pointer;padding:0 0 18px;">← Volver a elegir usuario</button>
+        <h3 style="margin:0 0 20px;color:#1f2937;font-size:18px;">Editar usuario</h3>
+        <form id="zs-editar-form">
+          <div style="margin-bottom:16px;">
+            <label for="zs-editar-nombre" style="display:block;margin-bottom:7px;color:#374151;font-size:14px;font-weight:700;">Nombre</label>
+            <input id="zs-editar-nombre" type="text" autocomplete="off" required style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label for="zs-editar-email" style="display:block;margin-bottom:7px;color:#374151;font-size:14px;font-weight:700;">Correo electrónico</label>
+            <input id="zs-editar-email" type="email" autocomplete="off" required style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;">
+          </div>
+          <button id="zs-editar-submit" type="submit" style="width:100%;border:0;border-radius:8px;padding:12px;background:#ad1457;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Guardar cambios</button>
+          <div id="zs-editar-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
+        </form>
       </div>`;
 
     const sesion = document.getElementById("zs-sesion");
@@ -66,26 +122,101 @@
 
     panelUsuarios.querySelector("#zs-usuarios-volver").addEventListener("click", volverAlInicio);
     panelUsuarios.querySelector("#zs-opcion-crear").addEventListener("click", mostrarCrearUsuario);
+    panelUsuarios.querySelector("#zs-opcion-editar").addEventListener("click", mostrarEditarUsuarios);
     panelUsuarios.querySelector("#zs-crear-volver").addEventListener("click", mostrarMenuUsuarios);
+    panelUsuarios.querySelector("#zs-editar-volver").addEventListener("click", mostrarMenuUsuarios);
+    panelUsuarios.querySelector("#zs-editar-form-volver").addEventListener("click", mostrarEditarUsuarios);
     panelUsuarios.querySelector("#zs-usuarios-form").addEventListener("submit", crearUsuario);
+    panelUsuarios.querySelector("#zs-editar-form").addEventListener("submit", guardarEdicionUsuario);
     return panelUsuarios;
   }
 
+  function ocultarSecciones() {
+    ["#zs-usuarios-menu", "#zs-usuarios-crear", "#zs-usuarios-editar", "#zs-usuarios-editar-formulario"].forEach((selector) => {
+      const elemento = panelUsuarios?.querySelector(selector);
+      if (elemento) elemento.style.display = "none";
+    });
+  }
+
   function mostrarMenuUsuarios() {
+    ocultarSecciones();
+    usuarioSeleccionado = null;
     const menu = panelUsuarios?.querySelector("#zs-usuarios-menu");
-    const crear = panelUsuarios?.querySelector("#zs-usuarios-crear");
     const volverInicio = panelUsuarios?.querySelector("#zs-usuarios-volver");
     if (menu) menu.style.display = "grid";
-    if (crear) crear.style.display = "none";
     if (volverInicio) volverInicio.style.display = "inline-block";
   }
 
   function mostrarCrearUsuario() {
-    const menu = panelUsuarios?.querySelector("#zs-usuarios-menu");
+    ocultarSecciones();
     const crear = panelUsuarios?.querySelector("#zs-usuarios-crear");
     const volverInicio = panelUsuarios?.querySelector("#zs-usuarios-volver");
-    if (menu) menu.style.display = "none";
     if (crear) crear.style.display = "block";
+    if (volverInicio) volverInicio.style.display = "none";
+  }
+
+  async function mostrarEditarUsuarios() {
+    ocultarSecciones();
+    usuarioSeleccionado = null;
+
+    const editar = panelUsuarios?.querySelector("#zs-usuarios-editar");
+    const volverInicio = panelUsuarios?.querySelector("#zs-usuarios-volver");
+    const lista = panelUsuarios?.querySelector("#zs-editar-lista");
+    const mensaje = panelUsuarios?.querySelector("#zs-editar-lista-mensaje");
+
+    if (editar) editar.style.display = "block";
+    if (volverInicio) volverInicio.style.display = "none";
+    if (lista) lista.innerHTML = "";
+    if (mensaje) {
+      mensaje.style.color = "#374151";
+      mensaje.textContent = "Cargando distribuidores...";
+    }
+
+    try {
+      const data = await invocarAdministrarUsuarios({ accion: "listar" });
+      const usuarios = Array.isArray(data.usuarios) ? data.usuarios : [];
+
+      if (!usuarios.length) {
+        mensaje.textContent = "No hay distribuidores para editar.";
+        return;
+      }
+
+      mensaje.textContent = "";
+
+      usuarios.forEach((usuario) => {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.style.cssText = "width:100%;text-align:left;padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer;color:#1f2937;";
+        boton.innerHTML = `
+          <strong style="display:block;font-size:14px;margin-bottom:4px;"></strong>
+          <span style="display:block;font-size:13px;color:#6b7280;"></span>
+        `;
+        boton.querySelector("strong").textContent = usuario.nombre || "Sin nombre";
+        boton.querySelector("span").textContent = usuario.email || "Sin correo";
+        boton.addEventListener("click", () => abrirFormularioEdicion(usuario));
+        lista.appendChild(boton);
+      });
+    } catch (error) {
+      console.error("No se pudieron cargar los distribuidores:", error);
+      mensaje.style.color = "#b91c1c";
+      mensaje.textContent = error?.message || "No fue posible cargar los distribuidores.";
+    }
+  }
+
+  function abrirFormularioEdicion(usuario) {
+    usuarioSeleccionado = usuario;
+    ocultarSecciones();
+
+    const formularioPanel = panelUsuarios?.querySelector("#zs-usuarios-editar-formulario");
+    const volverInicio = panelUsuarios?.querySelector("#zs-usuarios-volver");
+    const nombre = panelUsuarios?.querySelector("#zs-editar-nombre");
+    const email = panelUsuarios?.querySelector("#zs-editar-email");
+    const mensaje = panelUsuarios?.querySelector("#zs-editar-mensaje");
+
+    if (nombre) nombre.value = usuario.nombre || "";
+    if (email) email.value = usuario.email || "";
+    if (mensaje) mensaje.textContent = "";
+    if (formularioPanel) formularioPanel.style.display = "block";
     if (volverInicio) volverInicio.style.display = "none";
   }
 
@@ -101,7 +232,6 @@
     event.preventDefault();
     if (!esAdministradora()) return;
 
-    const client = window.zeroStockSupabase;
     const form = event.currentTarget;
     const boton = form.querySelector("#zs-usuarios-submit");
     const mensaje = form.querySelector("#zs-usuarios-mensaje");
@@ -115,23 +245,7 @@
     boton.textContent = "Creando usuario...";
 
     try {
-      if (!client?.functions?.invoke) throw new Error("No se pudo conectar con la administración de usuarios.");
-
-      const { data: sessionData, error: sessionError } = await client.auth.getSession();
-      if (sessionError) throw sessionError;
-
-      const accessToken = sessionData?.session?.access_token;
-      if (!accessToken) throw new Error("No hay una sesión autenticada disponible.");
-
-      const { data, error } = await client.functions.invoke("administrar-usuarios", {
-        body: { nombre, email, password },
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-
-      if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error || "No fue posible crear el usuario.");
+      const data = await invocarAdministrarUsuarios({ nombre, email, password });
 
       form.reset();
       mensaje.style.color = "#166534";
@@ -143,6 +257,44 @@
     } finally {
       boton.disabled = false;
       boton.textContent = "Crear usuario";
+    }
+  }
+
+  async function guardarEdicionUsuario(event) {
+    event.preventDefault();
+    if (!esAdministradora() || !usuarioSeleccionado?.id) return;
+
+    const form = event.currentTarget;
+    const boton = form.querySelector("#zs-editar-submit");
+    const mensaje = form.querySelector("#zs-editar-mensaje");
+    const nombre = form.querySelector("#zs-editar-nombre").value.trim();
+    const email = form.querySelector("#zs-editar-email").value.trim();
+
+    mensaje.textContent = "";
+    mensaje.style.color = "#374151";
+    boton.disabled = true;
+    boton.textContent = "Guardando cambios...";
+
+    try {
+      const data = await invocarAdministrarUsuarios({
+        accion: "editar",
+        id: usuarioSeleccionado.id,
+        nombre,
+        email
+      });
+
+      usuarioSeleccionado = data.usuario;
+      form.querySelector("#zs-editar-nombre").value = data.usuario?.nombre || nombre;
+      form.querySelector("#zs-editar-email").value = data.usuario?.email || email;
+      mensaje.style.color = "#166534";
+      mensaje.textContent = `Usuario ${data.usuario?.nombre || nombre} actualizado correctamente.`;
+    } catch (error) {
+      console.error("No se pudo editar el usuario:", error);
+      mensaje.style.color = "#b91c1c";
+      mensaje.textContent = error?.message || "No fue posible guardar los cambios.";
+    } finally {
+      boton.disabled = false;
+      boton.textContent = "Guardar cambios";
     }
   }
 
@@ -162,7 +314,7 @@
       boton.className = "zs-inicio-opcion";
       boton.id = "zs-administrar-usuarios";
       boton.type = "button";
-      boton.innerHTML = "<strong>Administrar usuarios</strong><span>Crea nuevas cuentas de distribuidores.</span>";
+      boton.innerHTML = "<strong>Administrar usuarios</strong><span>Crea y administra cuentas de distribuidores.</span>";
       boton.addEventListener("click", abrirUsuarios);
       opciones.appendChild(boton);
     }
