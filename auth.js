@@ -426,6 +426,50 @@
     }[tipo] || "Informe";
   }
 
+  function nombrePdfInforme(informe) {
+    const abbrMap = {
+      inventario: "Inv",
+      devolucion: "Dev",
+      recepcion: "Rec"
+    };
+    const abbr = abbrMap[informe?.tipo] || "Doc";
+
+    const full = String(informe?.distribuidor || "").trim();
+    let firstName = "NN";
+    let firstSurname = "";
+
+    if (full) {
+      const partes = full.split(/\s+/).filter(Boolean);
+      firstName = partes[0] || "NN";
+      if (partes.length >= 2) {
+        firstSurname = partes.length >= 3
+          ? partes[partes.length - 2]
+          : partes[1];
+      }
+    }
+
+    const fecha = informe?.finalizado_en
+      ? new Date(informe.finalizado_en)
+      : new Date();
+
+    const dd = String(fecha.getDate()).padStart(2, "0");
+    const mm = String(fecha.getMonth() + 1).padStart(2, "0");
+    const yy = String(fecha.getFullYear()).slice(-2);
+
+    const sanitize = valor => String(valor || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[\/\\:*?"<>|]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const nombreDist = firstSurname
+      ? `${firstName} ${firstSurname}`
+      : firstName;
+
+    return `${abbr}-${sanitize(nombreDist)}-${dd}-${mm}-${yy}.pdf`;
+  }
+
+
   function formatearFechaInforme(fechaIso) {
     if (!fechaIso) return "Sin fecha";
     const fecha = new Date(fechaIso);
@@ -527,7 +571,7 @@
         `;
         tarjeta.querySelector(".zs-historico-descargar")
           .addEventListener("click", (event) =>
-            descargarPdfHistorico(informe.id, event.currentTarget)
+            descargarPdfHistorico(informe, event.currentTarget)
           );
         lista.appendChild(tarjeta);
       });
@@ -543,9 +587,11 @@
     }
   }
 
-  async function descargarPdfHistorico(informeId, boton) {
+  async function descargarPdfHistorico(informe, boton) {
     const session = window.zeroStockSession;
-    if (!session?.user?.id || !informeId) return;
+    if (!session?.user?.id || !informe?.id) return;
+
+    const informeId = informe.id;
 
     const textoOriginal = boton?.textContent || "Descargar PDF";
     if (boton) {
@@ -565,7 +611,7 @@
       const url = URL.createObjectURL(data);
       const enlace = document.createElement("a");
       enlace.href = url;
-      enlace.download = `Informe_${informeId}.pdf`;
+      enlace.download = nombrePdfInforme(informe);
       document.body.appendChild(enlace);
       enlace.click();
       enlace.remove();
@@ -823,7 +869,7 @@
       const url = URL.createObjectURL(data);
       const enlace = document.createElement("a");
       enlace.href = url;
-      enlace.download = `Informe_${informe.id}.pdf`;
+      enlace.download = nombrePdfInforme(informe);
       document.body.appendChild(enlace);
       enlace.click();
       enlace.remove();
