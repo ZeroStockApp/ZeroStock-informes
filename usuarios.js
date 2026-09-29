@@ -99,6 +99,28 @@
         <div id="zs-editar-lista-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
       </div>
 
+      <div id="zs-usuarios-eliminar" style="display:none;max-width:520px;margin:0 auto;">
+        <button id="zs-eliminar-volver" type="button" style="border:0;background:transparent;color:#ad1457;font-weight:700;cursor:pointer;padding:0 0 18px;">← Volver a administrar usuarios</button>
+        <h3 style="margin:0 0 8px;color:#1f2937;font-size:18px;">Eliminar usuario</h3>
+        <p style="margin:0 0 18px;color:#6b7280;font-size:13px;">Selecciona el distribuidor que quieres eliminar permanentemente.</p>
+        <div id="zs-eliminar-lista" style="display:grid;gap:10px;"></div>
+        <div id="zs-eliminar-lista-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
+      </div>
+
+      <div id="zs-usuarios-eliminar-confirmacion" style="display:none;max-width:520px;margin:0 auto;">
+        <button id="zs-eliminar-confirmacion-volver" type="button" style="border:0;background:transparent;color:#ad1457;font-weight:700;cursor:pointer;padding:0 0 18px;">← Volver a elegir usuario</button>
+        <h3 style="margin:0 0 14px;color:#1f2937;font-size:18px;">Confirmar eliminación</h3>
+        <div style="padding:16px;border:1px solid #fecaca;background:#fff7f7;border-radius:10px;">
+          <p id="zs-eliminar-pregunta" style="margin:0 0 8px;color:#1f2937;font-weight:700;"></p>
+          <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">Se eliminarán permanentemente su cuenta y todos sus informes. Esta acción no se puede deshacer.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
+          <button id="zs-eliminar-cancelar" type="button" style="border:1px solid #d1d5db;border-radius:8px;padding:12px;background:#fff;color:#374151;font-size:14px;font-weight:700;cursor:pointer;">Cancelar</button>
+          <button id="zs-eliminar-confirmar" type="button" style="border:0;border-radius:8px;padding:12px;background:#b91c1c;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Eliminar</button>
+        </div>
+        <div id="zs-eliminar-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
+      </div>
+
       <div id="zs-usuarios-editar-formulario" style="display:none;max-width:520px;margin:0 auto;">
         <button id="zs-editar-form-volver" type="button" style="border:0;background:transparent;color:#ad1457;font-weight:700;cursor:pointer;padding:0 0 18px;">← Volver a elegir usuario</button>
         <h3 style="margin:0 0 20px;color:#1f2937;font-size:18px;">Editar usuario</h3>
@@ -123,16 +145,21 @@
     panelUsuarios.querySelector("#zs-usuarios-volver").addEventListener("click", volverAlInicio);
     panelUsuarios.querySelector("#zs-opcion-crear").addEventListener("click", mostrarCrearUsuario);
     panelUsuarios.querySelector("#zs-opcion-editar").addEventListener("click", mostrarEditarUsuarios);
+    panelUsuarios.querySelector("#zs-opcion-eliminar").addEventListener("click", mostrarEliminarUsuarios);
     panelUsuarios.querySelector("#zs-crear-volver").addEventListener("click", mostrarMenuUsuarios);
     panelUsuarios.querySelector("#zs-editar-volver").addEventListener("click", mostrarMenuUsuarios);
     panelUsuarios.querySelector("#zs-editar-form-volver").addEventListener("click", mostrarEditarUsuarios);
+    panelUsuarios.querySelector("#zs-eliminar-volver").addEventListener("click", mostrarMenuUsuarios);
+    panelUsuarios.querySelector("#zs-eliminar-confirmacion-volver").addEventListener("click", mostrarEliminarUsuarios);
+    panelUsuarios.querySelector("#zs-eliminar-cancelar").addEventListener("click", mostrarEliminarUsuarios);
+    panelUsuarios.querySelector("#zs-eliminar-confirmar").addEventListener("click", confirmarEliminarUsuario);
     panelUsuarios.querySelector("#zs-usuarios-form").addEventListener("submit", crearUsuario);
     panelUsuarios.querySelector("#zs-editar-form").addEventListener("submit", guardarEdicionUsuario);
     return panelUsuarios;
   }
 
   function ocultarSecciones() {
-    ["#zs-usuarios-menu", "#zs-usuarios-crear", "#zs-usuarios-editar", "#zs-usuarios-editar-formulario"].forEach((selector) => {
+    ["#zs-usuarios-menu", "#zs-usuarios-crear", "#zs-usuarios-editar", "#zs-usuarios-editar-formulario", "#zs-usuarios-eliminar", "#zs-usuarios-eliminar-confirmacion"].forEach((selector) => {
       const elemento = panelUsuarios?.querySelector(selector);
       if (elemento) elemento.style.display = "none";
     });
@@ -218,6 +245,112 @@
     if (mensaje) mensaje.textContent = "";
     if (formularioPanel) formularioPanel.style.display = "block";
     if (volverInicio) volverInicio.style.display = "none";
+  }
+
+  async function mostrarEliminarUsuarios() {
+    ocultarSecciones();
+    usuarioSeleccionado = null;
+
+    const eliminar = panelUsuarios?.querySelector("#zs-usuarios-eliminar");
+    const volverInicio = panelUsuarios?.querySelector("#zs-usuarios-volver");
+    const lista = panelUsuarios?.querySelector("#zs-eliminar-lista");
+    const mensaje = panelUsuarios?.querySelector("#zs-eliminar-lista-mensaje");
+
+    if (eliminar) eliminar.style.display = "block";
+    if (volverInicio) volverInicio.style.display = "none";
+    if (lista) lista.innerHTML = "";
+    if (mensaje) {
+      mensaje.style.color = "#374151";
+      mensaje.textContent = "Cargando distribuidores...";
+    }
+
+    try {
+      const data = await invocarAdministrarUsuarios({ accion: "listar" });
+      const usuarios = Array.isArray(data.usuarios) ? data.usuarios : [];
+
+      if (!usuarios.length) {
+        mensaje.textContent = "No hay distribuidores para eliminar.";
+        return;
+      }
+
+      mensaje.textContent = "";
+
+      usuarios.forEach((usuario) => {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.style.cssText = "width:100%;text-align:left;padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer;color:#1f2937;";
+        boton.innerHTML = `
+          <strong style="display:block;font-size:14px;margin-bottom:4px;"></strong>
+          <span style="display:block;font-size:13px;color:#6b7280;"></span>
+        `;
+        boton.querySelector("strong").textContent = usuario.nombre || "Sin nombre";
+        boton.querySelector("span").textContent = usuario.email || "Sin correo";
+        boton.addEventListener("click", () => abrirConfirmacionEliminacion(usuario));
+        lista.appendChild(boton);
+      });
+    } catch (error) {
+      console.error("No se pudieron cargar los distribuidores:", error);
+      mensaje.style.color = "#b91c1c";
+      mensaje.textContent = error?.message || "No fue posible cargar los distribuidores.";
+    }
+  }
+
+  function abrirConfirmacionEliminacion(usuario) {
+    usuarioSeleccionado = usuario;
+    ocultarSecciones();
+
+    const confirmacion = panelUsuarios?.querySelector("#zs-usuarios-eliminar-confirmacion");
+    const volverInicio = panelUsuarios?.querySelector("#zs-usuarios-volver");
+    const pregunta = panelUsuarios?.querySelector("#zs-eliminar-pregunta");
+    const mensaje = panelUsuarios?.querySelector("#zs-eliminar-mensaje");
+
+    if (pregunta) pregunta.textContent = `¿Eliminar a ${usuario.nombre || "este usuario"}?`;
+    if (mensaje) mensaje.textContent = "";
+    if (confirmacion) confirmacion.style.display = "block";
+    if (volverInicio) volverInicio.style.display = "none";
+  }
+
+  async function confirmarEliminarUsuario() {
+    if (!esAdministradora() || !usuarioSeleccionado?.id) return;
+
+    const boton = panelUsuarios?.querySelector("#zs-eliminar-confirmar");
+    const cancelar = panelUsuarios?.querySelector("#zs-eliminar-cancelar");
+    const mensaje = panelUsuarios?.querySelector("#zs-eliminar-mensaje");
+    const nombre = usuarioSeleccionado.nombre || "Usuario";
+
+    mensaje.textContent = "";
+    mensaje.style.color = "#374151";
+    boton.disabled = true;
+    cancelar.disabled = true;
+    boton.textContent = "Eliminando...";
+
+    try {
+      await invocarAdministrarUsuarios({
+        accion: "eliminar",
+        id: usuarioSeleccionado.id
+      });
+
+      usuarioSeleccionado = null;
+      mensaje.style.color = "#166534";
+      mensaje.textContent = `${nombre} fue eliminado permanentemente.`;
+      boton.style.display = "none";
+      cancelar.textContent = "Volver";
+      cancelar.disabled = false;
+      cancelar.onclick = () => {
+        boton.style.display = "";
+        boton.textContent = "Eliminar";
+        cancelar.textContent = "Cancelar";
+        cancelar.onclick = null;
+        mostrarEliminarUsuarios();
+      };
+    } catch (error) {
+      console.error("No se pudo eliminar el usuario:", error);
+      mensaje.style.color = "#b91c1c";
+      mensaje.textContent = error?.message || "No fue posible eliminar el usuario.";
+      boton.disabled = false;
+      cancelar.disabled = false;
+      boton.textContent = "Eliminar";
+    }
   }
 
   function abrirUsuarios() {
