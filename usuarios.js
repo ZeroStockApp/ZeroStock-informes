@@ -318,9 +318,9 @@
     }
 
     if (botonCancelar) {
+      botonCancelar.style.display = "";
       botonCancelar.disabled = false;
       botonCancelar.textContent = "Cancelar";
-      botonCancelar.onclick = null;
     }
 
     if (confirmacion) confirmacion.style.display = "block";
@@ -351,15 +351,7 @@
       mensaje.style.color = "#166534";
       mensaje.textContent = `${nombre} fue eliminado permanentemente.`;
       boton.style.display = "none";
-      cancelar.textContent = "Volver";
-      cancelar.disabled = false;
-      cancelar.onclick = () => {
-        boton.style.display = "";
-        boton.textContent = "Eliminar";
-        cancelar.textContent = "Cancelar";
-        cancelar.onclick = null;
-        mostrarEliminarUsuarios();
-      };
+      cancelar.style.display = "none";
     } catch (error) {
       console.error("No se pudo eliminar el usuario:", error);
       mensaje.style.color = "#b91c1c";
