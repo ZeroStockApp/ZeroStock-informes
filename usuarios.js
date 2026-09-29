@@ -23,25 +23,41 @@
     panelUsuarios.innerHTML = `
       <button id="zs-usuarios-volver" type="button" style="border:0;background:transparent;color:#ad1457;font-weight:700;cursor:pointer;padding:0 0 18px;">← Volver al inicio</button>
       <h2 style="margin:0 0 24px;color:#1f2937;">Administrar usuarios</h2>
-      <form id="zs-usuarios-form" style="max-width:520px;margin:0 auto;">
-        <div style="margin-bottom:16px;">
-          <label for="zs-usuario-nombre" style="display:block;margin-bottom:7px;color:#374151;font-size:14px;font-weight:700;">Nombre</label>
-          <input id="zs-usuario-nombre" type="text" autocomplete="off" required style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;">
-        </div>
-        <div style="margin-bottom:16px;">
-          <label for="zs-usuario-email" style="display:block;margin-bottom:7px;color:#374151;font-size:14px;font-weight:700;">Correo electrónico</label>
-          <input id="zs-usuario-email" type="email" autocomplete="off" required style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;">
-        </div>
-        <div style="margin-bottom:16px;">
-          <label for="zs-usuario-password" style="display:block;margin-bottom:7px;color:#374151;font-size:14px;font-weight:700;">Contraseña inicial</label>
-          <input id="zs-usuario-password" type="password" autocomplete="new-password" minlength="6" required style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;">
-        </div>
-        <button id="zs-usuarios-submit" type="submit" style="width:100%;border:0;border-radius:8px;padding:12px;background:#ad1457;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Crear usuario</button>
-        <div id="zs-usuarios-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
-      </form>
-      <div id="zs-distribuidores" style="max-width:520px;margin:32px auto 0;padding-top:24px;border-top:1px solid #e5e7eb;">
-        <h3 style="margin:0 0 14px;color:#1f2937;font-size:17px;">Distribuidores</h3>
-        <div id="zs-distribuidores-lista" style="color:#6b7280;font-size:14px;">Cargando distribuidores...</div>
+
+      <div id="zs-usuarios-menu" style="max-width:520px;margin:0 auto;display:grid;gap:12px;">
+        <button id="zs-opcion-crear" type="button" style="width:100%;text-align:left;padding:16px 18px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer;color:#1f2937;">
+          <strong style="display:block;font-size:15px;margin-bottom:4px;">Crear nuevo usuario</strong>
+          <span style="font-size:13px;color:#6b7280;">Crea una nueva cuenta de distribuidor.</span>
+        </button>
+        <button id="zs-opcion-editar" type="button" style="width:100%;text-align:left;padding:16px 18px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer;color:#1f2937;">
+          <strong style="display:block;font-size:15px;margin-bottom:4px;">Editar usuario</strong>
+          <span style="font-size:13px;color:#6b7280;">Modifica los datos de un distribuidor existente.</span>
+        </button>
+        <button id="zs-opcion-eliminar" type="button" style="width:100%;text-align:left;padding:16px 18px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer;color:#1f2937;">
+          <strong style="display:block;font-size:15px;margin-bottom:4px;">Eliminar usuario</strong>
+          <span style="font-size:13px;color:#6b7280;">Elimina permanentemente una cuenta de distribuidor.</span>
+        </button>
+      </div>
+
+      <div id="zs-usuarios-crear" style="display:none;max-width:520px;margin:0 auto;">
+        <button id="zs-crear-volver" type="button" style="border:0;background:transparent;color:#ad1457;font-weight:700;cursor:pointer;padding:0 0 18px;">← Volver a administrar usuarios</button>
+        <h3 style="margin:0 0 20px;color:#1f2937;font-size:18px;">Crear nuevo usuario</h3>
+        <form id="zs-usuarios-form">
+          <div style="margin-bottom:16px;">
+            <label for="zs-usuario-nombre" style="display:block;margin-bottom:7px;color:#374151;font-size:14px;font-weight:700;">Nombre</label>
+            <input id="zs-usuario-nombre" type="text" autocomplete="off" required style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label for="zs-usuario-email" style="display:block;margin-bottom:7px;color:#374151;font-size:14px;font-weight:700;">Correo electrónico</label>
+            <input id="zs-usuario-email" type="email" autocomplete="off" required style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label for="zs-usuario-password" style="display:block;margin-bottom:7px;color:#374151;font-size:14px;font-weight:700;">Contraseña inicial</label>
+            <input id="zs-usuario-password" type="password" autocomplete="new-password" minlength="6" required style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;">
+          </div>
+          <button id="zs-usuarios-submit" type="submit" style="width:100%;border:0;border-radius:8px;padding:12px;background:#ad1457;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Crear usuario</button>
+          <div id="zs-usuarios-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
+        </form>
       </div>`;
 
     const sesion = document.getElementById("zs-sesion");
@@ -49,59 +65,36 @@
     else document.body.appendChild(panelUsuarios);
 
     panelUsuarios.querySelector("#zs-usuarios-volver").addEventListener("click", volverAlInicio);
+    panelUsuarios.querySelector("#zs-opcion-crear").addEventListener("click", mostrarCrearUsuario);
+    panelUsuarios.querySelector("#zs-crear-volver").addEventListener("click", mostrarMenuUsuarios);
     panelUsuarios.querySelector("#zs-usuarios-form").addEventListener("submit", crearUsuario);
     return panelUsuarios;
   }
 
-  async function cargarDistribuidores() {
-    const client = window.zeroStockSupabase;
-    const lista = panelUsuarios?.querySelector("#zs-distribuidores-lista");
-    if (!lista) return;
-
-    lista.style.color = "#6b7280";
-    lista.textContent = "Cargando distribuidores...";
-
-    try {
-      if (!client?.from) throw new Error("No se pudo conectar con la base de datos.");
-
-      const { data: perfiles, error } = await client
-        .from("perfiles")
-        .select("id, nombre, rol, activo")
-        .eq("activo", true)
-        .order("nombre", { ascending: true });
-
-      if (error) throw error;
-
-      const distribuidores = (perfiles || []).filter(perfil =>
-        perfil?.id &&
-        String(perfil?.rol || "").trim().toLowerCase() !== "administradora"
-      );
-
-      if (!distribuidores.length) {
-        lista.textContent = "No hay distribuidores registrados.";
-        return;
-      }
-
-      lista.innerHTML = "";
-      distribuidores.forEach(perfil => {
-        const fila = document.createElement("div");
-        fila.style.cssText = "padding:12px 14px;margin-bottom:8px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;color:#1f2937;font-weight:700;";
-        fila.textContent = perfil.nombre || "Sin nombre";
-        lista.appendChild(fila);
-      });
-    } catch (error) {
-      console.error("No se pudieron cargar los distribuidores:", error);
-      lista.style.color = "#b91c1c";
-      lista.textContent = "No fue posible cargar los distribuidores.";
-    }
+  function mostrarMenuUsuarios() {
+    const menu = panelUsuarios?.querySelector("#zs-usuarios-menu");
+    const crear = panelUsuarios?.querySelector("#zs-usuarios-crear");
+    const volverInicio = panelUsuarios?.querySelector("#zs-usuarios-volver");
+    if (menu) menu.style.display = "grid";
+    if (crear) crear.style.display = "none";
+    if (volverInicio) volverInicio.style.display = "inline-block";
   }
 
-  async function abrirUsuarios() {
+  function mostrarCrearUsuario() {
+    const menu = panelUsuarios?.querySelector("#zs-usuarios-menu");
+    const crear = panelUsuarios?.querySelector("#zs-usuarios-crear");
+    const volverInicio = panelUsuarios?.querySelector("#zs-usuarios-volver");
+    if (menu) menu.style.display = "none";
+    if (crear) crear.style.display = "block";
+    if (volverInicio) volverInicio.style.display = "none";
+  }
+
+  function abrirUsuarios() {
     if (!esAdministradora()) return;
     const panelInicio = document.getElementById("zs-inicio");
     if (panelInicio) panelInicio.style.display = "none";
     crearPanelUsuarios().style.display = "block";
-    await cargarDistribuidores();
+    mostrarMenuUsuarios();
   }
 
   async function crearUsuario(event) {
