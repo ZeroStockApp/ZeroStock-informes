@@ -38,7 +38,11 @@
         </div>
         <button id="zs-usuarios-submit" type="submit" style="width:100%;border:0;border-radius:8px;padding:12px;background:#ad1457;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Crear usuario</button>
         <div id="zs-usuarios-mensaje" role="status" aria-live="polite" style="min-height:20px;margin-top:14px;text-align:center;font-size:13px;line-height:1.45;"></div>
-      </form>`;
+      </form>
+      <div id="zs-distribuidores" style="max-width:520px;margin:32px auto 0;padding-top:24px;border-top:1px solid #e5e7eb;">
+        <h3 style="margin:0 0 14px;color:#1f2937;font-size:17px;">Distribuidores</h3>
+        <div id="zs-distribuidores-lista" style="color:#6b7280;font-size:14px;">Cargando distribuidores...</div>
+      </div>`;
 
     const sesion = document.getElementById("zs-sesion");
     if (sesion?.parentNode) sesion.parentNode.insertBefore(panelUsuarios, sesion.nextSibling);
@@ -49,11 +53,55 @@
     return panelUsuarios;
   }
 
-  function abrirUsuarios() {
+  async function cargarDistribuidores() {
+    const client = window.zeroStockSupabase;
+    const lista = panelUsuarios?.querySelector("#zs-distribuidores-lista");
+    if (!lista) return;
+
+    lista.style.color = "#6b7280";
+    lista.textContent = "Cargando distribuidores...";
+
+    try {
+      if (!client?.from) throw new Error("No se pudo conectar con la base de datos.");
+
+      const { data: perfiles, error } = await client
+        .from("perfiles")
+        .select("id, nombre, rol, activo")
+        .eq("activo", true)
+        .order("nombre", { ascending: true });
+
+      if (error) throw error;
+
+      const distribuidores = (perfiles || []).filter(perfil =>
+        perfil?.id &&
+        String(perfil?.rol || "").trim().toLowerCase() !== "administradora"
+      );
+
+      if (!distribuidores.length) {
+        lista.textContent = "No hay distribuidores registrados.";
+        return;
+      }
+
+      lista.innerHTML = "";
+      distribuidores.forEach(perfil => {
+        const fila = document.createElement("div");
+        fila.style.cssText = "padding:12px 14px;margin-bottom:8px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;color:#1f2937;font-weight:700;";
+        fila.textContent = perfil.nombre || "Sin nombre";
+        lista.appendChild(fila);
+      });
+    } catch (error) {
+      console.error("No se pudieron cargar los distribuidores:", error);
+      lista.style.color = "#b91c1c";
+      lista.textContent = "No fue posible cargar los distribuidores.";
+    }
+  }
+
+  async function abrirUsuarios() {
     if (!esAdministradora()) return;
     const panelInicio = document.getElementById("zs-inicio");
     if (panelInicio) panelInicio.style.display = "none";
     crearPanelUsuarios().style.display = "block";
+    await cargarDistribuidores();
   }
 
   async function crearUsuario(event) {
