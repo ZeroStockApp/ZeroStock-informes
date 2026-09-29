@@ -31,6 +31,12 @@
 #zs-login-btn { width:100%; border:0; border-radius:8px; padding:12px; background:#e91e63; color:#fff; font-size:15px; font-weight:700; cursor:pointer; }
 #zs-login-btn:disabled { opacity:.65; cursor:wait; }
 #zs-login-error { min-height:20px; margin:14px 0 0; color:#b91c1c; text-align:center; font-size:13px; }
+.zs-link-clave { display:block; width:100%; margin:12px 0 0; border:0; background:transparent; color:#ad1457; font-size:13px; font-weight:700; cursor:pointer; text-align:center; }
+#zs-recuperar, #zs-nueva-clave { display:none; }
+.zs-mensaje-clave { min-height:20px; margin:14px 0 0; text-align:center; font-size:13px; }
+.zs-boton-secundario { display:block; width:100%; margin-top:10px; border:1px solid #d1d5db; border-radius:8px; padding:11px; background:#fff; color:#374151; font-size:14px; font-weight:700; cursor:pointer; }
+.zs-boton-principal { width:100%; border:0; border-radius:8px; padding:12px; background:#e91e63; color:#fff; font-size:15px; font-weight:700; cursor:pointer; }
+.zs-boton-principal:disabled { opacity:.65; cursor:wait; }
 #zs-sesion { display:none; align-items:center; justify-content:flex-end; gap:10px; max-width:980px; margin:12px auto 0; padding:0 16px; box-sizing:border-box; font-family:Arial,sans-serif; font-size:13px; color:#4b5563; }
 #zs-logout { border:1px solid #d1d5db; background:#fff; border-radius:7px; padding:7px 10px; cursor:pointer; color:#374151; }
 #zs-volver-inicio { display:none; max-width:800px; margin:10px auto 0; padding:0 16px; box-sizing:border-box; font-family:Arial,sans-serif; }
@@ -54,8 +60,38 @@
         <input id="zs-password" type="password" autocomplete="current-password" required />
       </div>
       <button id="zs-login-btn" type="submit">Ingresar</button>
+      <button id="zs-olvide-clave" class="zs-link-clave" type="button">¿Olvidaste tu contraseña?</button>
       <div id="zs-login-error" role="alert" aria-live="polite"></div>
     </form>
+
+    <div id="zs-recuperar">
+      <p class="zs-subtitulo">Escribe tu correo y te enviaremos un enlace para crear una contraseña nueva.</p>
+      <form id="zs-recuperar-form">
+        <div class="zs-campo">
+          <label for="zs-recuperar-email">Correo electrónico</label>
+          <input id="zs-recuperar-email" type="email" autocomplete="email" required />
+        </div>
+        <button id="zs-recuperar-btn" class="zs-boton-principal" type="submit">Enviar enlace</button>
+        <button id="zs-volver-login" class="zs-boton-secundario" type="button">Volver al inicio de sesión</button>
+        <div id="zs-recuperar-mensaje" class="zs-mensaje-clave" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <div id="zs-nueva-clave">
+      <p class="zs-subtitulo">Crea tu nueva contraseña.</p>
+      <form id="zs-nueva-clave-form">
+        <div class="zs-campo">
+          <label for="zs-nueva-password">Nueva contraseña</label>
+          <input id="zs-nueva-password" type="password" autocomplete="new-password" minlength="6" required />
+        </div>
+        <div class="zs-campo">
+          <label for="zs-confirmar-password">Confirmar nueva contraseña</label>
+          <input id="zs-confirmar-password" type="password" autocomplete="new-password" minlength="6" required />
+        </div>
+        <button id="zs-guardar-clave" class="zs-boton-principal" type="submit">Guardar nueva contraseña</button>
+        <div id="zs-nueva-clave-mensaje" class="zs-mensaje-clave" role="status" aria-live="polite"></div>
+      </form>
+    </div>
   </div>
 </div>
 <div id="zs-sesion">
