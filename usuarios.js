@@ -453,7 +453,7 @@
 
     if (!boton) {
       boton = document.createElement("button");
-      boton.className = "zs-inicio-opcion";
+      boton.className = "zs-inicio-opcion zs-admin-principal";
       boton.id = "zs-administrar-usuarios";
       boton.type = "button";
       boton.innerHTML = "<strong>Administrar usuarios</strong><span>Crea y administra cuentas de distribuidores.</span>";
