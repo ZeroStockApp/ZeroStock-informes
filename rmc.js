@@ -1384,6 +1384,13 @@ if (tipoVal === "1" || tipoVal === "3") {
   contenedorTemporal = document.createElement('div');
   contenedorTemporal.classList.add('pdf-font');
   contenedorTemporal.style.padding = '10px 0';
+  // El PDF debe conservar el mismo ancho de impresión en PC, tablet y celular.
+  // Sin un ancho fijo, html2canvas puede tomar como referencia el viewport móvil
+  // y encoger la tabla dentro de la hoja.
+  contenedorTemporal.style.width = '1000px';
+  contenedorTemporal.style.maxWidth = 'none';
+  contenedorTemporal.style.boxSizing = 'border-box';
+  contenedorTemporal.style.backgroundColor = '#ffffff';
 
   // Clonamos encabezado ya rellenado
   const encabezadoClone = pdfEncabezado.cloneNode(true);
@@ -1433,6 +1440,9 @@ if (f) {
   // ancho fijo y distribución estable
   tablaNueva.style.width = '100%';
   tablaNueva.style.tableLayout = 'fixed';
+  tablaNueva.style.display = 'table';
+  tablaNueva.style.maxWidth = 'none';
+  tablaNueva.style.borderCollapse = 'collapse';
 
   const thead = document.createElement('thead');
   const trh = document.createElement('tr');
@@ -1553,6 +1563,11 @@ tablaWrap.style.fontFamily = 'Arial, sans-serif';
   // ===== DEVOLUCIÓN (sin tallas) =====
   contenedorTemporal = document.createElement('div');
   contenedorTemporal.style.padding = '10px 0';
+  // Ancho fijo de impresión A4: evita que el PDF herede el ancho del celular.
+  contenedorTemporal.style.width = '718px';
+  contenedorTemporal.style.maxWidth = 'none';
+  contenedorTemporal.style.boxSizing = 'border-box';
+  contenedorTemporal.style.backgroundColor = '#ffffff';
 
   const encabezadoClone = pdfEncabezado.cloneNode(true);
   contenedorTemporal.appendChild(encabezadoClone);
@@ -1601,6 +1616,9 @@ if (f) {
   tablaNueva.style.fontSize = '12px';  // ← NUEVO (tamaño de letra más pequeño)
   tablaNueva.style.width = '100%';
   tablaNueva.style.tableLayout = 'fixed';
+  tablaNueva.style.display = 'table';
+  tablaNueva.style.maxWidth = 'none';
+  tablaNueva.style.borderCollapse = 'collapse';
 
   const thead = document.createElement('thead');
 const trh = document.createElement('tr');
