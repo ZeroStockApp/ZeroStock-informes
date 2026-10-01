@@ -337,6 +337,11 @@
       .zs-inicio-opcion:disabled { opacity:.48; cursor:default; }
       .zs-inicio-opcion strong { display:block; margin-bottom:9px; color:#ad1457; font-size:17px; }
       .zs-inicio-opcion span { color:#6b7280; font-size:13px; line-height:1.45; }
+      .zs-admin-principal { background:#fff7fa; border-color:#f3c6d6; min-height:128px; }
+      .zs-admin-principal:hover:not(:disabled) { background:#fff1f6; border-color:#e99ab7; }
+      .zs-admin-volver-menu { grid-column:1/-1; border:0; background:transparent; color:#ad1457; font-weight:700; cursor:pointer; padding:2px 0 4px; text-align:left; }
+      .zs-admin-submenu-titulo { grid-column:1/-1; margin:0 0 2px; color:#2c3e50; font-family:'Playfair Display',serif; font-size:22px; }
+      .zs-admin-submenu-texto { grid-column:1/-1; margin:-4px 0 6px; color:#6b7280; font-size:13px; }
       .zs-inicio-estado { display:block; margin-top:10px; color:#374151!important; font-weight:700; }
       #zs-historicos { max-width:800px; margin:18px auto 30px; padding:30px 32px; box-sizing:border-box; background:#fff; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.10); font-family:Arial,sans-serif; }
       #zs-historicos h2 { margin:0 0 22px; color:#2c3e50; font-family:'Playfair Display',serif; font-size:27px; text-align:center; }
@@ -362,7 +367,7 @@
       .zs-admin-selector { margin:0 0 22px; padding:16px; background:#f8f9fa; border-radius:9px; }
       .zs-admin-selector label { display:block; margin-bottom:8px; color:#374151; font-size:14px; font-weight:700; }
       .zs-admin-selector select { width:100%; box-sizing:border-box; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; color:#374151; }
-      @media (min-width:701px) { .zs-inicio-opciones.zs-inicio-opciones-admin { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+      @media (min-width:701px) { .zs-inicio-opciones.zs-inicio-opciones-admin { grid-template-columns:repeat(3,minmax(0,1fr)); } .zs-inicio-opciones.zs-inicio-opciones-admin .zs-inicio-opcion { min-height:128px; } }
       @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } #zs-historicos { margin:12px auto 24px; padding:24px 18px; } }
     `;
     document.head.appendChild(estilos);
@@ -373,10 +378,14 @@
       <h1>ZeroStock</h1>
       <p class="zs-inicio-saludo" id="zs-inicio-saludo"></p>
       <div class="zs-inicio-opciones">
-        <button class="zs-inicio-opcion" id="zs-crear-informe" type="button"><strong>Crear informe</strong><span>Empieza un informe nuevo.</span></button>
-        <button class="zs-inicio-opcion" id="zs-continuar-informe" type="button" disabled><strong>Informe en curso</strong><span>Continúa el informe que dejaste pendiente.</span><span class="zs-inicio-estado" id="zs-borrador-estado">Buscando informe en curso...</span></button>
-        <button class="zs-inicio-opcion" id="zs-ver-informes" type="button"><strong>Ver informes</strong><span>Consulta tus últimos 4 informes finalizados.</span></button>
-        <button class="zs-inicio-opcion" id="zs-administrar-informes" type="button" style="display:none;"><strong>Administrar informes</strong><span>Consulta los informes de los distribuidores.</span></button>
+        <button class="zs-inicio-opcion zs-admin-principal" id="zs-informes-menu" type="button" style="display:none;"><strong>Informes</strong><span>Crea, continúa o consulta tus informes.</span></button>
+        <button class="zs-inicio-opcion zs-informe-accion" id="zs-crear-informe" type="button"><strong>Crear informe</strong><span>Empieza un informe nuevo.</span></button>
+        <button class="zs-inicio-opcion zs-informe-accion" id="zs-continuar-informe" type="button" disabled><strong>Informe en curso</strong><span>Continúa el informe que dejaste pendiente.</span><span class="zs-inicio-estado" id="zs-borrador-estado">Buscando informe en curso...</span></button>
+        <button class="zs-inicio-opcion zs-informe-accion" id="zs-ver-informes" type="button"><strong>Ver informes</strong><span>Consulta tus últimos 4 informes finalizados.</span></button>
+        <button class="zs-inicio-opcion zs-admin-principal" id="zs-administrar-informes" type="button" style="display:none;"><strong>Administrar informes</strong><span>Consulta los informes de los distribuidores.</span></button>
+        <button class="zs-admin-volver-menu" id="zs-volver-menu-admin" type="button" style="display:none;">← Volver al menú principal</button>
+        <h2 class="zs-admin-submenu-titulo" id="zs-informes-titulo" style="display:none;">Informes</h2>
+        <p class="zs-admin-submenu-texto" id="zs-informes-texto" style="display:none;">Elige qué quieres hacer.</p>
       </div>`;
     sessionBar.insertAdjacentElement("afterend", panelInicio);
 
@@ -401,6 +410,32 @@
         });
       });
     }
+
+    const mostrarMenuAdminPrincipal = () => {
+      if (!esAdministradoraActual()) return;
+      panelInicio.querySelector("#zs-informes-menu").style.display = "";
+      panelInicio.querySelector("#zs-administrar-informes").style.display = "";
+      panelInicio.querySelectorAll(".zs-informe-accion").forEach(el => el.style.display = "none");
+      ["#zs-volver-menu-admin", "#zs-informes-titulo", "#zs-informes-texto"].forEach(sel => {
+        const el = panelInicio.querySelector(sel); if (el) el.style.display = "none";
+      });
+      const usuarios = document.getElementById("zs-administrar-usuarios");
+      if (usuarios) { usuarios.style.display = ""; usuarios.classList.add("zs-admin-principal"); }
+    };
+
+    const mostrarSubmenuInformesAdmin = () => {
+      panelInicio.querySelector("#zs-informes-menu").style.display = "none";
+      panelInicio.querySelector("#zs-administrar-informes").style.display = "none";
+      const usuarios = document.getElementById("zs-administrar-usuarios");
+      if (usuarios) usuarios.style.display = "none";
+      panelInicio.querySelectorAll(".zs-informe-accion").forEach(el => el.style.display = "");
+      ["#zs-volver-menu-admin", "#zs-informes-titulo", "#zs-informes-texto"].forEach(sel => {
+        const el = panelInicio.querySelector(sel); if (el) el.style.display = "";
+      });
+    };
+
+    panelInicio.querySelector("#zs-informes-menu").addEventListener("click", mostrarSubmenuInformesAdmin);
+    panelInicio.querySelector("#zs-volver-menu-admin").addEventListener("click", mostrarMenuAdminPrincipal);
 
     panelInicio.querySelector("#zs-crear-informe").addEventListener("click", async () => {
       if (borradorDisponible?.id) {
@@ -1008,8 +1043,25 @@
     const btnAdministrar = panel.querySelector("#zs-administrar-informes");
     const opcionesInicio = panel.querySelector(".zs-inicio-opciones");
     const esAdmin = esAdministradoraActual();
-    if (btnAdministrar) btnAdministrar.style.display = esAdmin ? "" : "none";
     if (opcionesInicio) opcionesInicio.classList.toggle("zs-inicio-opciones-admin", esAdmin);
+    const btnMenuInformes = panel.querySelector("#zs-informes-menu");
+    const btnVolverMenuAdmin = panel.querySelector("#zs-volver-menu-admin");
+    const tituloInformesAdmin = panel.querySelector("#zs-informes-titulo");
+    const textoInformesAdmin = panel.querySelector("#zs-informes-texto");
+    if (esAdmin) {
+      if (btnMenuInformes) btnMenuInformes.style.display = "";
+      if (btnAdministrar) btnAdministrar.style.display = "";
+      panel.querySelectorAll(".zs-informe-accion").forEach(el => el.style.display = "none");
+      if (btnVolverMenuAdmin) btnVolverMenuAdmin.style.display = "none";
+      if (tituloInformesAdmin) tituloInformesAdmin.style.display = "none";
+      if (textoInformesAdmin) textoInformesAdmin.style.display = "none";
+      const usuarios = document.getElementById("zs-administrar-usuarios");
+      if (usuarios) { usuarios.style.display = ""; usuarios.classList.add("zs-admin-principal"); }
+    } else {
+      if (btnMenuInformes) btnMenuInformes.style.display = "none";
+      if (btnAdministrar) btnAdministrar.style.display = "none";
+      panel.querySelectorAll(".zs-informe-accion").forEach(el => el.style.display = "");
+    }
     app.style.display = "none";
     panel.style.display = "block";
     const volverInicio = document.getElementById("zs-volver-inicio");
