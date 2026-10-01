@@ -368,7 +368,7 @@
       .zs-admin-selector label { display:block; margin-bottom:8px; color:#374151; font-size:14px; font-weight:700; }
       .zs-admin-selector select { width:100%; box-sizing:border-box; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; color:#374151; }
       @media (min-width:701px) { .zs-inicio-opciones.zs-inicio-opciones-admin { grid-template-columns:repeat(3,minmax(0,1fr)); } .zs-inicio-opciones.zs-inicio-opciones-admin .zs-inicio-opcion { min-height:128px; } }
-      @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } #zs-historicos { margin:12px auto 24px; padding:24px 18px; } }
+      @media (max-width:700px) { #zs-inicio { margin:12px auto 24px; padding:26px 20px; } .zs-inicio-opciones { grid-template-columns:1fr; } .zs-inicio-opcion { min-height:auto; } #zs-historicos { margin:12px auto 24px; padding:24px 18px; } .zs-historico-card { flex-direction:column; align-items:stretch; gap:12px; } .zs-historico-info { width:100%; } .zs-historico-descargar { width:100%; } }
     `;
     document.head.appendChild(estilos);
 
